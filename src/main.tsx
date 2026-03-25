@@ -16,6 +16,8 @@ import { HomePage } from '@/pages/HomePage';
 import { DirectoryPage } from '@/pages/DirectoryPage';
 import { OfficialsPage } from '@/pages/OfficialsPage';
 import { EmergencyPage } from '@/pages/EmergencyPage';
+import { LoginPage } from '@/pages/Admin/LoginPage';
+import { AdminDashboard } from '@/pages/Admin/AdminDashboard';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -45,6 +47,14 @@ const router = createBrowserRouter([
       {
         path: "emergency",
         element: <EmergencyPage />,
+      },
+      {
+        path: "login",
+        element: <LoginPage />,
+      },
+      {
+        path: "admin",
+        element: <AdminDashboard />,
       },
     ]
   },

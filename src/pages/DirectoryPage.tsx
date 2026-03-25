@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { DirectoryItem } from '@shared/types';
 const CATEGORIES = ['All', 'Food', 'Health', 'Services', 'Retail'];
 export function DirectoryPage() {
@@ -36,7 +37,7 @@ export function DirectoryPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search businesses or services..."
-              className="pl-10 h-11 bg-secondary border-none"
+              className="pl-10 h-11 bg-secondary border-input focus:ring-sky-500 ring-offset-2 transition-all"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -49,8 +50,8 @@ export function DirectoryPage() {
                 size="sm"
                 onClick={() => setCategory(cat)}
                 className={cn(
-                  "rounded-full whitespace-nowrap transition-all",
-                  category === cat ? "bg-sky-500 hover:bg-sky-600 scale-105" : ""
+                  "rounded-full whitespace-nowrap transition-all duration-300 hover:scale-105",
+                  category === cat ? "bg-sky-500 hover:bg-sky-600 shadow-md shadow-sky-500/20" : ""
                 )}
               >
                 {cat}
@@ -74,45 +75,57 @@ export function DirectoryPage() {
             </Card>
           ))}
         </div>
-      ) : filtered.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filtered.map((item) => (
-            <Card key={item.id} className="overflow-hidden border-none shadow-soft hover:-translate-y-1 hover:shadow-lg transition-all group">
-              <div className="aspect-video relative overflow-hidden">
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                />
-                <Badge className="absolute top-4 right-4 bg-white/90 text-slate-900 backdrop-blur-sm border-none shadow-sm">
-                  {item.category}
-                </Badge>
-              </div>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xl group-hover:text-sky-600 transition-colors">{item.name}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {item.description}
-                </p>
-                <div className="space-y-2 pt-2 border-t">
-                  <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                    <MapPin className="h-4 w-4 text-sky-500 shrink-0" />
-                    <span className="truncate">{item.address}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                    <Phone className="h-4 w-4 text-sky-500 shrink-0" />
-                    <span>{item.phone}</span>
-                  </div>
-                </div>
-                <Button variant="ghost" size="sm" className="w-full mt-2 text-sky-600 hover:text-sky-700 hover:bg-sky-50 transition-colors">
-                  More Details <ExternalLink className="ml-2 h-3 w-3" />
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
       ) : (
+        <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <AnimatePresence mode="popLayout">
+            {filtered.map((item) => (
+              <motion.div
+                key={item.id}
+                layout
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Card className="overflow-hidden h-full border-none shadow-soft hover:-translate-y-1 hover:shadow-lg transition-all group">
+                  <div className="aspect-video relative overflow-hidden">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <Badge className="absolute top-4 right-4 bg-white/95 text-slate-900 backdrop-blur-sm border-none shadow-sm">
+                      {item.category}
+                    </Badge>
+                  </div>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xl group-hover:text-sky-600 transition-colors">{item.name}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {item.description}
+                    </p>
+                    <div className="space-y-2 pt-2 border-t">
+                      <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                        <MapPin className="h-4 w-4 text-sky-500 shrink-0" />
+                        <span className="truncate">{item.address}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                        <Phone className="h-4 w-4 text-sky-500 shrink-0" />
+                        <span>{item.phone}</span>
+                      </div>
+                    </div>
+                    <Button variant="ghost" size="sm" className="w-full mt-2 text-sky-600 hover:text-sky-700 hover:bg-sky-50 transition-colors">
+                      View Details <ExternalLink className="ml-2 h-3 w-3" />
+                    </Button>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </motion.div>
+      )}
+      {!isLoading && filtered.length === 0 && (
         <div className="text-center py-20 bg-slate-50 dark:bg-slate-900/50 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800">
           <p className="text-muted-foreground">No results found for your search.</p>
           <Button variant="link" className="text-sky-600" onClick={() => { setSearch(''); setCategory('All'); }}>Clear filters</Button>
