@@ -25,7 +25,7 @@ export function AnnouncementForm({ initialData, trigger }: { initialData?: any, 
     defaultValues: initialData || { title: '', date: new Date().toISOString().split('T')[0], content: '', category: 'News' },
   });
   const mutation = useMutation({
-    mutationFn: (data: any) => initialData 
+    mutationFn: (data: any) => initialData
       ? api(`/api/announcements/${initialData.id}`, { method: 'PUT', body: JSON.stringify(data) })
       : api('/api/announcements', { method: 'POST', body: JSON.stringify(data) }),
     onSuccess: () => {
@@ -83,7 +83,7 @@ export function BusinessForm({ initialData, trigger }: { initialData?: any, trig
     defaultValues: initialData || { name: '', category: 'Retail', address: '', phone: '', image: 'https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&q=80&w=800' },
   });
   const mutation = useMutation({
-    mutationFn: (data: any) => initialData 
+    mutationFn: (data: any) => initialData
       ? api(`/api/directory/${initialData.id}`, { method: 'PUT', body: JSON.stringify(data) })
       : api('/api/directory', { method: 'POST', body: JSON.stringify(data) }),
     onSuccess: () => {
@@ -126,5 +126,105 @@ export function BusinessForm({ initialData, trigger }: { initialData?: any, trig
     </Dialog>
   );
 }
-export function OfficialForm({ initialData, trigger }: { initialData?: any, trigger: React.ReactNode }) { return null; }
-export function JobForm({ initialData, trigger }: { initialData?: any, trigger: React.ReactNode }) { return null; }
+const officialSchema = z.object({
+  name: z.string().min(2),
+  position: z.string().min(2),
+  image: z.string().url(),
+  term: z.string().optional(),
+});
+export function OfficialForm({ initialData, trigger }: { initialData?: any, trigger: React.ReactNode }) {
+  const [open, setOpen] = React.useState(false);
+  const queryClient = useQueryClient();
+  const form = useForm<z.infer<typeof officialSchema>>({
+    resolver: zodResolver(officialSchema),
+    defaultValues: initialData || { name: '', position: '', image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=400', term: '2023-2025' },
+  });
+  const mutation = useMutation({
+    mutationFn: (data: any) => initialData
+      ? api(`/api/officials/${initialData.id}`, { method: 'PUT', body: JSON.stringify(data) })
+      : api('/api/officials', { method: 'POST', body: JSON.stringify(data) }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['officials'] });
+      toast.success('Official roster updated');
+      setOpen(false);
+    }
+  });
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogContent>
+        <DialogHeader><DialogTitle>{initialData ? 'Edit' : 'Add'} Official</DialogTitle></DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(v => mutation.mutate(v))} className="space-y-4">
+            <FormField control={form.control} name="name" render={({ field }) => (
+              <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+            )} />
+            <FormField control={form.control} name="position" render={({ field }) => (
+              <FormItem><FormLabel>Position</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+            )} />
+            <FormField control={form.control} name="term" render={({ field }) => (
+              <FormItem><FormLabel>Term of Office</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+            )} />
+            <FormField control={form.control} name="image" render={({ field }) => (
+              <FormItem><FormLabel>Image URL</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+            )} />
+            <Button type="submit" className="w-full bg-sky-600">Save Official</Button>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+const jobSchema = z.object({
+  businessName: z.string().min(2),
+  title: z.string().min(2),
+  description: z.string().min(10),
+  deadline: z.string(),
+  skillsRequired: z.string().transform(val => val.split(',').map(s => s.trim())),
+});
+export function JobForm({ initialData, trigger }: { initialData?: any, trigger: React.ReactNode }) {
+  const [open, setOpen] = React.useState(false);
+  const queryClient = useQueryClient();
+  const form = useForm({
+    resolver: zodResolver(jobSchema),
+    defaultValues: initialData ? { ...initialData, skillsRequired: initialData.skillsRequired.join(', ') } : { businessName: '', title: '', description: '', deadline: '', skillsRequired: '' },
+  });
+  const mutation = useMutation({
+    mutationFn: (data: any) => initialData
+      ? api(`/api/jobs/${initialData.id}`, { method: 'PUT', body: JSON.stringify(data) })
+      : api('/api/jobs', { method: 'POST', body: JSON.stringify(data) }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      toast.success('Job posting saved');
+      setOpen(false);
+    }
+  });
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogContent>
+        <DialogHeader><DialogTitle>Job Posting</DialogTitle></DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(v => mutation.mutate(v))} className="space-y-4">
+            <FormField control={form.control} name="businessName" render={({ field }) => (
+              <FormItem><FormLabel>Business Name</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+            )} />
+            <FormField control={form.control} name="title" render={({ field }) => (
+              <FormItem><FormLabel>Job Title</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+            )} />
+            <FormField control={form.control} name="deadline" render={({ field }) => (
+              <FormItem><FormLabel>Deadline</FormLabel><FormControl><Input type="date" {...field} /></FormControl></FormItem>
+            )} />
+            <FormField control={form.control} name="skillsRequired" render={({ field }) => (
+              <FormItem><FormLabel>Skills Required (comma-separated)</FormLabel><FormControl><Input placeholder="Driver, Cleaner, etc" {...field} /></FormControl></FormItem>
+            )} />
+            <FormField control={form.control} name="description" render={({ field }) => (
+              <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea rows={4} {...field} /></FormControl></FormItem>
+            )} />
+            <Button type="submit" className="w-full bg-sky-600">Save Job Posting</Button>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+}

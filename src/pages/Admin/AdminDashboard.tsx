@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { LogOut, Trash2, Plus, Edit, MessageSquare } from 'lucide-react';
+import { LogOut, Trash2, Plus, Edit, MessageSquare, ShieldCheck, UserCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { AnnouncementForm, BusinessForm, OfficialForm, JobForm } from '@/components/admin/AdminDialogs';
 import type { Announcement, DirectoryItem, Official, Appointment, Resident, SkilledWorker, JobPosting } from '@shared/types';
@@ -42,50 +42,58 @@ export function AdminDashboard() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-12">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight">Admin Console</h1>
-          <p className="text-muted-foreground">Managing community services & registry.</p>
+          <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white">Admin Console</h1>
+          <p className="text-muted-foreground">Managing PanipuanConnect community services.</p>
         </div>
-        <Button variant="outline" onClick={() => logout()} className="gap-2">
+        <Button variant="outline" onClick={() => logout()} className="gap-2 border-slate-200 hover:bg-slate-50 transition-colors">
           <LogOut className="h-4 w-4" /> Sign Out
         </Button>
       </div>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-        <TabsList className="bg-sky-50 dark:bg-slate-900 p-1 rounded-xl flex-wrap h-auto">
-          <TabsTrigger value="appointments">Appointments</TabsTrigger>
-          <TabsTrigger value="news">Announcements</TabsTrigger>
-          <TabsTrigger value="businesses">Businesses</TabsTrigger>
-          <TabsTrigger value="officials">Officials</TabsTrigger>
-          <TabsTrigger value="jobs">Job Bulletin</TabsTrigger>
-          <TabsTrigger value="residents">Residents</TabsTrigger>
-          <TabsTrigger value="skills">Skills Registry</TabsTrigger>
-          <TabsTrigger value="feedback"><MessageSquare className="h-4 w-4 mr-2" /> Feedback</TabsTrigger>
+        <TabsList className="bg-sky-50 dark:bg-slate-900 p-1 rounded-xl flex-wrap h-auto gap-1">
+          <TabsTrigger value="appointments" className="rounded-lg">Appointments</TabsTrigger>
+          <TabsTrigger value="news" className="rounded-lg">Announcements</TabsTrigger>
+          <TabsTrigger value="businesses" className="rounded-lg">Businesses</TabsTrigger>
+          <TabsTrigger value="officials" className="rounded-lg">Officials</TabsTrigger>
+          <TabsTrigger value="jobs" className="rounded-lg">Job Bulletin</TabsTrigger>
+          <TabsTrigger value="residents" className="rounded-lg">Residents</TabsTrigger>
+          <TabsTrigger value="skills" className="rounded-lg">Skills Registry</TabsTrigger>
+          <TabsTrigger value="feedback" className="rounded-lg"><MessageSquare className="h-4 w-4 mr-2" /> Feedback</TabsTrigger>
         </TabsList>
+        <TabsContent value="appointments" className="space-y-6">
+          <Card className="border-none shadow-soft overflow-hidden">
+            <Table>
+              <TableHeader className="bg-slate-50 dark:bg-slate-900/50"><TableRow><TableHead>Resident</TableHead><TableHead>Document</TableHead><TableHead>Scheduled</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
+              <TableBody>
+                {apps?.items.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell className="font-medium">{item.residentName}</TableCell>
+                    <TableCell>{item.documentType}</TableCell>
+                    <TableCell>{item.scheduledDate}</TableCell>
+                    <TableCell><Badge variant={item.status === 'confirmed' ? 'default' : 'secondary'}>{item.status}</Badge></TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+        </TabsContent>
         <TabsContent value="news" className="space-y-6">
           <div className="flex justify-between items-center">
             <h3 className="text-2xl font-bold">Community News</h3>
-            <AnnouncementForm trigger={<Button className="bg-sky-600"><Plus className="h-4 w-4 mr-2" /> New Post</Button>} />
+            <AnnouncementForm trigger={<Button className="bg-sky-600 hover:bg-sky-700"><Plus className="h-4 w-4 mr-2" /> New Post</Button>} />
           </div>
-          <Card>
+          <Card className="border-none shadow-soft overflow-hidden">
             <Table>
-              <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Title</TableHead><TableHead>Category</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+              <TableHeader className="bg-slate-50"><TableRow><TableHead>Date</TableHead><TableHead>Title</TableHead><TableHead>Category</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
               <TableBody>
                 {news?.items.map((item) => (
                   <TableRow key={item.id}>
                     <TableCell>{item.date}</TableCell>
                     <TableCell className="font-medium">{item.title}</TableCell>
-                    <TableCell><Badge variant="outline">{item.category}</Badge></TableCell>
+                    <TableCell><Badge variant="outline" className="bg-sky-50 text-sky-700 border-sky-200">{item.category}</Badge></TableCell>
                     <TableCell className="text-right flex justify-end gap-2">
                       <AnnouncementForm initialData={item} trigger={<Button size="icon" variant="ghost"><Edit className="h-4 w-4" /></Button>} />
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild><Button size="icon" variant="ghost" className="text-destructive"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader><AlertDialogTitle>Delete Announcement?</AlertDialogTitle><AlertDialogDescription>This action cannot be undone.</AlertDialogDescription></AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => deleteItem.mutate({ type: 'announcements', id: item.id })} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                      <Button size="icon" variant="ghost" className="text-destructive" onClick={() => deleteItem.mutate({ type: 'announcements', id: item.id })}><Trash2 className="h-4 w-4" /></Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -93,15 +101,14 @@ export function AdminDashboard() {
             </Table>
           </Card>
         </TabsContent>
-        {/* Similar patterns for Businesses, Officials, and Jobs */}
         <TabsContent value="businesses" className="space-y-6">
           <div className="flex justify-between items-center">
             <h3 className="text-2xl font-bold">Local Directory</h3>
-            <BusinessForm trigger={<Button className="bg-sky-600"><Plus className="h-4 w-4 mr-2" /> Add Business</Button>} />
+            <BusinessForm trigger={<Button className="bg-sky-600 hover:bg-sky-700"><Plus className="h-4 w-4 mr-2" /> Add Business</Button>} />
           </div>
-          <Card>
+          <Card className="border-none shadow-soft overflow-hidden">
             <Table>
-              <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Category</TableHead><TableHead>Phone</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+              <TableHeader className="bg-slate-50"><TableRow><TableHead>Name</TableHead><TableHead>Category</TableHead><TableHead>Phone</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
               <TableBody>
                 {businesses?.items.map((item) => (
                   <TableRow key={item.id}>
@@ -118,29 +125,104 @@ export function AdminDashboard() {
             </Table>
           </Card>
         </TabsContent>
-        <TabsContent value="feedback" className="space-y-6">
-          <div className="text-center py-20 bg-slate-50 rounded-2xl border-2 border-dashed">
-            <MessageSquare className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-slate-900">No Feedback Yet</h3>
-            <p className="text-slate-500">Resident inquiries will appear here as they are submitted.</p>
+        <TabsContent value="officials" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h3 className="text-2xl font-bold">Barangay Roster</h3>
+            <OfficialForm trigger={<Button className="bg-sky-600"><Plus className="h-4 w-4 mr-2" /> Add Official</Button>} />
           </div>
-        </TabsContent>
-        {/* Existing Content for Appointments, Residents, Skills */}
-        <TabsContent value="appointments" className="space-y-6">
-           <Card>
+          <Card className="border-none shadow-soft overflow-hidden">
             <Table>
-              <TableHeader><TableRow><TableHead>Resident</TableHead><TableHead>Document</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
+              <TableHeader className="bg-slate-50"><TableRow><TableHead>Name</TableHead><TableHead>Position</TableHead><TableHead>Term</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
               <TableBody>
-                {apps?.items.map((item) => (
+                {officials?.items.map((item) => (
                   <TableRow key={item.id}>
-                    <TableCell>{item.residentName}</TableCell>
-                    <TableCell>{item.documentType}</TableCell>
-                    <TableCell><Badge>{item.status}</Badge></TableCell>
+                    <TableCell className="font-bold">{item.name}</TableCell>
+                    <TableCell className="text-sky-600 font-medium">{item.position}</TableCell>
+                    <TableCell>{item.term}</TableCell>
+                    <TableCell className="text-right flex justify-end gap-2">
+                      <OfficialForm initialData={item} trigger={<Button size="icon" variant="ghost"><Edit className="h-4 w-4" /></Button>} />
+                      <Button size="icon" variant="ghost" className="text-destructive" onClick={() => deleteItem.mutate({ type: 'officials', id: item.id })}><Trash2 className="h-4 w-4" /></Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
-           </Card>
+          </Card>
+        </TabsContent>
+        <TabsContent value="jobs" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h3 className="text-2xl font-bold">Job Postings</h3>
+            <JobForm trigger={<Button className="bg-sky-600"><Plus className="h-4 w-4 mr-2" /> New Job</Button>} />
+          </div>
+          <Card className="border-none shadow-soft overflow-hidden">
+            <Table>
+              <TableHeader className="bg-slate-50"><TableRow><TableHead>Business</TableHead><TableHead>Title</TableHead><TableHead>Deadline</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+              <TableBody>
+                {jobs?.items.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell className="font-medium">{item.businessName}</TableCell>
+                    <TableCell>{item.title}</TableCell>
+                    <TableCell>{item.deadline}</TableCell>
+                    <TableCell className="text-right flex justify-end gap-2">
+                      <JobForm initialData={item} trigger={<Button size="icon" variant="ghost"><Edit className="h-4 w-4" /></Button>} />
+                      <Button size="icon" variant="ghost" className="text-destructive" onClick={() => deleteItem.mutate({ type: 'jobs', id: item.id })}><Trash2 className="h-4 w-4" /></Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+        </TabsContent>
+        <TabsContent value="residents" className="space-y-6">
+          <h3 className="text-2xl font-bold">Resident Registry</h3>
+          <Card className="border-none shadow-soft overflow-hidden">
+            <Table>
+              <TableHeader className="bg-slate-50"><TableRow><TableHead>Name</TableHead><TableHead>Address</TableHead><TableHead>Reg. Date</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+              <TableBody>
+                {residents?.items.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell className="font-medium">{item.name}</TableCell>
+                    <TableCell>{item.address}</TableCell>
+                    <TableCell>{item.registrationDate}</TableCell>
+                    <TableCell><Badge variant={item.residencyStatus ? 'default' : 'secondary'}>{item.residencyStatus ? 'Verified' : 'Probation'}</Badge></TableCell>
+                    <TableCell className="text-right">
+                      <Button size="icon" variant="ghost" className="text-destructive" onClick={() => deleteItem.mutate({ type: 'residents', id: item.id })}><Trash2 className="h-4 w-4" /></Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+        </TabsContent>
+        <TabsContent value="skills" className="space-y-6">
+          <h3 className="text-2xl font-bold">Skills Registry</h3>
+          <Card className="border-none shadow-soft overflow-hidden">
+            <Table>
+              <TableHeader className="bg-slate-50"><TableRow><TableHead>Name</TableHead><TableHead>Skill</TableHead><TableHead>Contact</TableHead><TableHead>Verified</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+              <TableBody>
+                {skills?.items.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell className="font-medium">{item.name}</TableCell>
+                    <TableCell><Badge variant="outline">{item.skill}</Badge></TableCell>
+                    <TableCell>{item.contact}</TableCell>
+                    <TableCell>
+                      <Switch checked={item.isVerified} onCheckedChange={() => toggleVerify.mutate(item.id)} />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button size="icon" variant="ghost" className="text-destructive" onClick={() => deleteItem.mutate({ type: 'skills', id: item.id })}><Trash2 className="h-4 w-4" /></Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+        </TabsContent>
+        <TabsContent value="feedback" className="space-y-6">
+          <div className="text-center py-20 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
+            <MessageSquare className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-slate-900">No Feedback Yet</h3>
+            <p className="text-slate-500">Resident inquiries will appear here as they are submitted.</p>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

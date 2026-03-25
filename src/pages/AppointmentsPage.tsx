@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar as CalendarIcon, FileText, CheckCircle2, Clock, ShieldCheck, Search } from 'lucide-react';
+import { Calendar as CalendarIcon, FileText, CheckCircle2, Clock, ShieldCheck, Search, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -26,6 +26,8 @@ export function AppointmentsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments'] });
       toast.success('Appointment scheduled successfully');
+      setResidentName('');
+      setSelectedDate(undefined);
     }
   });
   const verifiedResident = residents?.items.find(r => r.name.toLowerCase() === searchResident.toLowerCase());
@@ -33,6 +35,11 @@ export function AppointmentsPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedDate || !residentName) return toast.error('Please fill in all fields');
+    const isRegistryMatch = residents?.items.some(r => r.name.toLowerCase() === residentName.toLowerCase());
+    if (!isRegistryMatch) {
+      toast.error('Name not found in resident registry. Please contact barangay hall.');
+      return;
+    }
     createAppointment.mutate({
       residentName,
       documentType: docType,
@@ -56,9 +63,9 @@ export function AppointmentsPage() {
             <CardContent className="space-y-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  placeholder="Enter full name..." 
-                  className="pl-10" 
+                <Input
+                  placeholder="Enter full name..."
+                  className="pl-10"
                   value={searchResident}
                   onChange={(e) => setSearchResident(e.target.value)}
                 />
@@ -67,14 +74,22 @@ export function AppointmentsPage() {
                 <div className={cn("p-4 rounded-xl border text-sm", isEligible ? "bg-emerald-50 border-emerald-200 text-emerald-800" : "bg-amber-50 border-amber-200 text-amber-800")}>
                   {verifiedResident ? (
                     <>
-                      <p className="font-bold mb-1">{isEligible ? 'Verified Resident' : 'New Resident'}</p>
+                      <div className="flex justify-between items-start mb-2">
+                         <p className="font-bold">{isEligible ? 'Verified Resident' : 'New Resident'}</p>
+                         <Badge variant={isEligible ? 'default' : 'outline'} className={isEligible ? 'bg-emerald-600' : 'text-amber-600 border-amber-200'}>
+                           {isEligible ? 'Eligible' : 'Pending'}
+                         </Badge>
+                      </div>
                       <p>Registered: {verifiedResident.registrationDate}</p>
-                      <p className="mt-2 text-xs opacity-80">
-                        {isEligible ? 'Eligible for all barangay certificates.' : 'Requires 6 months residency for full eligibility.'}
+                      <p className="mt-2 text-xs opacity-80 leading-relaxed">
+                        {isEligible ? 'Eligible for all barangay certificates.' : 'Requires 6 months residency for full eligibility for some documents.'}
                       </p>
                     </>
                   ) : (
-                    <p>Resident not found in official registry.</p>
+                    <div className="flex items-center gap-2 text-rose-600">
+                      <AlertCircle className="h-4 w-4" />
+                      <p>Resident not found in official registry.</p>
+                    </div>
                   )}
                 </div>
               )}
@@ -84,13 +99,16 @@ export function AppointmentsPage() {
         {/* Appointment Form */}
         <div className="lg:col-span-2 space-y-12">
           <section>
-            <h2 className="text-3xl font-bold mb-6">Schedule Document Pickup</h2>
+            <div className="mb-6">
+               <h2 className="text-3xl font-bold">Schedule Document Pickup</h2>
+               <p className="text-muted-foreground">Select a date to claim your requested documents at the Barangay Hall.</p>
+            </div>
             <Card className="shadow-lg border-none">
               <CardContent className="pt-6">
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Resident Name</label>
-                    <Input value={residentName} onChange={(e) => setResidentName(e.target.value)} placeholder="Full Name" required />
+                    <label className="text-sm font-medium">Full Name (from registry)</label>
+                    <Input value={residentName} onChange={(e) => setResidentName(e.target.value)} placeholder="e.g. Juan Dela Cruz" required />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Document Type</label>
@@ -109,18 +127,18 @@ export function AppointmentsPage() {
                     <label className="text-sm font-medium">Pick-up Date</label>
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button variant="outline" className="w-full justify-start text-left font-normal">
+                        <Button variant="outline" className="w-full justify-start text-left font-normal bg-slate-50 border-slate-200">
                           <CalendarIcon className="mr-2 h-4 w-4" />
                           {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} initialFocus />
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} initialFocus disabled={{ before: new Date() }} />
                       </PopoverContent>
                     </Popover>
                   </div>
                   <div className="flex items-end">
-                    <Button type="submit" className="w-full bg-sky-500 hover:bg-sky-600 h-11" disabled={createAppointment.isPending}>
+                    <Button type="submit" className="w-full bg-sky-500 hover:bg-sky-600 h-11 font-bold" disabled={createAppointment.isPending}>
                       Confirm Appointment
                     </Button>
                   </div>
@@ -129,18 +147,21 @@ export function AppointmentsPage() {
             </Card>
           </section>
           <section>
-            <h3 className="text-xl font-bold mb-4">Upcoming Appointments</h3>
+            <h3 className="text-xl font-bold mb-4">Ongoing Requests</h3>
             <div className="space-y-3">
+              {!appointments?.items.length && <p className="text-sm text-muted-foreground italic">No current appointments found.</p>}
               {appointments?.items.filter(a => a.status !== 'completed').map(app => (
-                <div key={app.id} className="flex items-center justify-between p-4 bg-white dark:bg-slate-900 rounded-xl border shadow-sm">
+                <div key={app.id} className="flex items-center justify-between p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm transition-all hover:border-sky-200">
                   <div className="flex items-center gap-4">
-                    <div className="bg-sky-50 p-2 rounded-lg text-sky-600"><FileText className="h-5 w-5" /></div>
+                    <div className="bg-sky-50 dark:bg-sky-900/30 p-2.5 rounded-xl text-sky-600"><FileText className="h-5 w-5" /></div>
                     <div>
-                      <p className="font-bold text-sm">{app.documentType}</p>
-                      <p className="text-xs text-muted-foreground">{app.scheduledDate}</p>
+                      <p className="font-bold text-sm text-slate-900 dark:text-white">{app.documentType}</p>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <CalendarIcon className="h-3 w-3" /> {app.scheduledDate}
+                      </p>
                     </div>
                   </div>
-                  <Badge variant={app.status === 'confirmed' ? 'default' : 'secondary'} className="capitalize">
+                  <Badge variant={app.status === 'confirmed' ? 'default' : 'secondary'} className={cn("capitalize px-3", app.status === 'confirmed' ? 'bg-sky-500' : '')}>
                     {app.status === 'confirmed' ? <CheckCircle2 className="h-3 w-3 mr-1" /> : <Clock className="h-3 w-3 mr-1" />}
                     {app.status}
                   </Badge>

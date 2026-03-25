@@ -7,9 +7,9 @@ import {
 import { ok, bad } from './core-utils';
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // ANNOUNCEMENTS
-  app.get('/api/announcements', async (c) => { 
-    await AnnouncementEntity.ensureSeed(c.env); 
-    return ok(c, await AnnouncementEntity.list(c.env)); 
+  app.get('/api/announcements', async (c) => {
+    await AnnouncementEntity.ensureSeed(c.env);
+    return ok(c, await AnnouncementEntity.list(c.env));
   });
   app.post('/api/announcements', async (c) => {
     const body = await c.req.json();
@@ -28,9 +28,9 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     return ok(c, { success });
   });
   // DIRECTORY
-  app.get('/api/directory', async (c) => { 
-    await DirectoryEntity.ensureSeed(c.env); 
-    return ok(c, await DirectoryEntity.list(c.env)); 
+  app.get('/api/directory', async (c) => {
+    await DirectoryEntity.ensureSeed(c.env);
+    return ok(c, await DirectoryEntity.list(c.env));
   });
   app.post('/api/directory', async (c) => {
     const body = await c.req.json();
@@ -49,9 +49,9 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     return ok(c, { success });
   });
   // OFFICIALS
-  app.get('/api/officials', async (c) => { 
-    await OfficialEntity.ensureSeed(c.env); 
-    return ok(c, await OfficialEntity.list(c.env)); 
+  app.get('/api/officials', async (c) => {
+    await OfficialEntity.ensureSeed(c.env);
+    return ok(c, await OfficialEntity.list(c.env));
   });
   app.post('/api/officials', async (c) => {
     const body = await c.req.json();
@@ -70,9 +70,9 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     return ok(c, { success });
   });
   // JOBS
-  app.get('/api/jobs', async (c) => { 
-    await JobPostingEntity.ensureSeed(c.env); 
-    return ok(c, await JobPostingEntity.list(c.env)); 
+  app.get('/api/jobs', async (c) => {
+    await JobPostingEntity.ensureSeed(c.env);
+    return ok(c, await JobPostingEntity.list(c.env));
   });
   app.post('/api/jobs', async (c) => {
     const body = await c.req.json();
@@ -91,9 +91,9 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     return ok(c, { success });
   });
   // SKILLS
-  app.get('/api/skills', async (c) => { 
-    await SkilledWorkerEntity.ensureSeed(c.env); 
-    return ok(c, await SkilledWorkerEntity.list(c.env)); 
+  app.get('/api/skills', async (c) => {
+    await SkilledWorkerEntity.ensureSeed(c.env);
+    return ok(c, await SkilledWorkerEntity.list(c.env));
   });
   app.put('/api/skills/:id/verify', async (c) => {
     const id = c.req.param('id');
@@ -102,9 +102,24 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     await entity.save({ ...state, isVerified: !state.isVerified });
     return ok(c, await entity.getState());
   });
-  // RESIDENTS & APPOINTMENTS (Existing)
-  app.get('/api/residents', async (c) => { await ResidentEntity.ensureSeed(c.env); return ok(c, await ResidentEntity.list(c.env)); });
-  app.get('/api/appointments', async (c) => { await AppointmentEntity.ensureSeed(c.env); return ok(c, await AppointmentEntity.list(c.env)); });
+  app.delete('/api/skills/:id', async (c) => {
+    const success = await SkilledWorkerEntity.delete(c.env, c.req.param('id'));
+    return ok(c, { success });
+  });
+  // RESIDENTS
+  app.get('/api/residents', async (c) => {
+    await ResidentEntity.ensureSeed(c.env);
+    return ok(c, await ResidentEntity.list(c.env));
+  });
+  app.delete('/api/residents/:id', async (c) => {
+    const success = await ResidentEntity.delete(c.env, c.req.param('id'));
+    return ok(c, { success });
+  });
+  // APPOINTMENTS
+  app.get('/api/appointments', async (c) => {
+    await AppointmentEntity.ensureSeed(c.env);
+    return ok(c, await AppointmentEntity.list(c.env));
+  });
   app.post('/api/appointments', async (c) => {
     const body = await c.req.json();
     const item = await AppointmentEntity.create(c.env, { ...body, id: crypto.randomUUID(), status: 'pending' });
