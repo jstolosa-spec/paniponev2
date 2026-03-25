@@ -1,8 +1,9 @@
-import React from 'react';
-import { ArrowRight, Bell, ShieldAlert, Store, Users, MapPin } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowRight, Bell, ShieldAlert, Store, Users, MapPin, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
@@ -10,6 +11,7 @@ import { api } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
 import type { Announcement } from '@shared/types';
 export function HomePage() {
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
   const { data: announcements, isLoading } = useQuery({
     queryKey: ['announcements'],
     queryFn: () => api<{ items: Announcement[] }>('/api/announcements'),
@@ -68,7 +70,55 @@ export function HomePage() {
           </div>
         </div>
       </section>
-      {/* Main Features */}
+      {/* Announcements */}
+      <section className="py-20 bg-slate-50 dark:bg-slate-900/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-end mb-12">
+            <div>
+              <h2 className="text-3xl font-bold mb-2">Latest Announcements</h2>
+              <p className="text-muted-foreground">Stay informed about what's happening in our barangay.</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {isLoading ? (
+              [1, 2].map((i) => (
+                <Card key={i} className="h-32 animate-pulse bg-slate-200 dark:bg-slate-800" />
+              ))
+            ) : (
+              announcements?.items.slice(0, 4).map((item) => (
+                <Card 
+                  key={item.id} 
+                  className="overflow-hidden hover:shadow-md transition-all cursor-pointer group"
+                  onClick={() => setSelectedAnnouncement(item)}
+                >
+                  <div className="flex h-full">
+                    <div className={cn(
+                      "w-2 shrink-0 transition-all group-hover:w-4",
+                      item.category === 'Alert' ? "bg-rose-500" : "bg-sky-500"
+                    )} />
+                    <CardHeader className="flex-1">
+                      <div className="flex justify-between items-start mb-2">
+                        <Badge variant="secondary" className="text-[10px] uppercase font-bold tracking-wider">
+                          {item.category}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">{item.date}</span>
+                      </div>
+                      <CardTitle className="text-xl mb-2 group-hover:text-sky-600 transition-colors">{item.title}</CardTitle>
+                      <CardDescription className="line-clamp-2 leading-relaxed">
+                        {item.content}
+                      </CardDescription>
+                      <div className="mt-4 flex items-center text-xs font-bold text-sky-600 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+                        Read Full Story <ExternalLink className="ml-2 h-3 w-3" />
+                      </div>
+                    </CardHeader>
+                  </div>
+                </Card>
+              ))
+            )}
+          </div>
+        </div>
+      </section>
+      {/* Feature Grids (Omitted inner content for brevity, same as previous Phase 4) */}
       <section className="py-20 bg-white dark:bg-slate-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -117,48 +167,30 @@ export function HomePage() {
           </div>
         </div>
       </section>
-      {/* Announcements */}
-      <section className="py-20 bg-slate-50 dark:bg-slate-900/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-end mb-12">
-            <div>
-              <h2 className="text-3xl font-bold mb-2">Latest Announcements</h2>
-              <p className="text-muted-foreground">Stay informed about what's happening in our barangay.</p>
-            </div>
-            <Button variant="ghost" className="hidden sm:flex text-sky-600 hover:text-sky-700">View All Updates</Button>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {isLoading ? (
-              [1, 2].map((i) => (
-                <Card key={i} className="h-32 animate-pulse bg-slate-200 dark:bg-slate-800" />
-              ))
-            ) : (
-              announcements?.items.slice(0, 4).map((item) => (
-                <Card key={item.id} className="overflow-hidden hover:shadow-md transition-shadow">
-                  <div className="flex">
-                    <div className={cn(
-                      "w-2 shrink-0",
-                      item.category === 'Alert' ? "bg-rose-500" : "bg-sky-500"
-                    )} />
-                    <CardHeader className="flex-1">
-                      <div className="flex justify-between items-start mb-2">
-                        <Badge variant="secondary" className="text-[10px] uppercase font-bold tracking-wider">
-                          {item.category}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">{item.date}</span>
-                      </div>
-                      <CardTitle className="text-xl mb-2">{item.title}</CardTitle>
-                      <CardDescription className="line-clamp-2 leading-relaxed">
-                        {item.content}
-                      </CardDescription>
-                    </CardHeader>
-                  </div>
-                </Card>
-              ))
-            )}
-          </div>
-        </div>
-      </section>
+      {/* Announcement Dialog */}
+      <Dialog open={!!selectedAnnouncement} onOpenChange={(o) => !o && setSelectedAnnouncement(null)}>
+        <DialogContent className="sm:max-w-[600px]">
+          {selectedAnnouncement && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center gap-2 mb-2">
+                  <Badge className={selectedAnnouncement.category === 'Alert' ? 'bg-rose-500' : 'bg-sky-500'}>
+                    {selectedAnnouncement.category}
+                  </Badge>
+                  <span className="text-sm text-muted-foreground">{selectedAnnouncement.date}</span>
+                </div>
+                <DialogTitle className="text-2xl font-bold">{selectedAnnouncement.title}</DialogTitle>
+              </DialogHeader>
+              <div className="py-4 text-lg leading-relaxed text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
+                {selectedAnnouncement.content}
+              </div>
+              <div className="pt-6 border-t flex justify-end">
+                <Button onClick={() => setSelectedAnnouncement(null)}>Close</Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

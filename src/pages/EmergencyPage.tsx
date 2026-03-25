@@ -1,8 +1,9 @@
 import React from 'react';
-import { Phone, ShieldAlert, Flame, Stethoscope, Zap, Droplets, MapPin } from 'lucide-react';
+import { Phone, ShieldAlert, Flame, Stethoscope, Zap, MapPin } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 const EMERGENCY_CONTACTS = [
   {
     category: 'Police & Security',
@@ -53,7 +54,6 @@ export function EmergencyPage() {
           Immediate help is just a call away. Keep these numbers saved for any emergency situation within Barangay Panipuan.
         </p>
       </div>
-      {/* Primary Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
         <Card className="bg-rose-600 text-white border-none shadow-xl transform hover:scale-[1.02] transition-transform">
           <CardHeader className="flex flex-row items-center gap-4">
@@ -84,7 +84,6 @@ export function EmergencyPage() {
           </CardContent>
         </Card>
       </div>
-      {/* Category Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         {EMERGENCY_CONTACTS.map((section) => {
           const Icon = section.icon;
@@ -116,15 +115,6 @@ export function EmergencyPage() {
           );
         })}
       </div>
-      <div className="mt-16 p-8 bg-sky-50 dark:bg-sky-950/20 rounded-3xl border border-sky-100 dark:border-sky-900/50 text-center">
-        <h3 className="text-xl font-bold text-sky-900 dark:text-sky-100 mb-2">Notice to Residents</h3>
-        <p className="text-sky-700 dark:text-sky-300 max-w-2xl mx-auto text-sm leading-relaxed">
-          The Barangay Response Team is available 24 hours a day. For non-emergencies such as document requests or general inquiries, please visit the Barangay Hall during regular business hours (8:00 AM - 5:00 PM).
-        </p>
-      </div>
     </div>
   );
-}
-function cn(...inputs: any[]) {
-  return inputs.filter(Boolean).join(' ');
 }

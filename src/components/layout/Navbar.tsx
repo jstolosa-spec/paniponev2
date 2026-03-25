@@ -10,6 +10,7 @@ const NAV_LINKS = [
   { label: 'Directory', href: '/directory' },
   { label: 'Services', href: '/appointments' },
   { label: 'Officials', href: '/officials' },
+  { label: 'Contact', href: '/contact' },
 ];
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
