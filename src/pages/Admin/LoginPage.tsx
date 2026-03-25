@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Landmark, Loader2, Lock } from 'lucide-react';
+import { Landmark, Loader2, Lock, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +9,7 @@ import { useAuthStore } from '@/store/auth-store';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 export function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -19,12 +20,12 @@ export function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const response = await api<{ user: { id: string; name: string } }>('/api/auth/login', {
+      const response = await api<{ user: { id: string; name: string; role: any; residentId?: string } }>('/api/auth/login', {
         method: 'POST',
         body: JSON.stringify({ username, password }),
       });
       login(response.user);
-      toast.success('Welcome back, Administrator');
+      toast.success(`Welcome back, ${response.user.role}`);
       navigate('/admin');
     } catch (error) {
       toast.error('Invalid credentials. Please try again.');
@@ -46,8 +47,8 @@ export function LoginPage() {
               <Landmark className="h-10 w-10 text-sky-600" />
             </div>
             <div>
-              <CardTitle className="text-3xl font-bold">Admin Access</CardTitle>
-              <CardDescription>Official Information System Management</CardDescription>
+              <CardTitle className="text-3xl font-bold">Panipuan Auth</CardTitle>
+              <CardDescription>Barangay Governance System Access</CardDescription>
             </div>
           </CardHeader>
           <CardContent>
@@ -56,7 +57,7 @@ export function LoginPage() {
                 <Label htmlFor="username">Username</Label>
                 <Input
                   id="username"
-                  placeholder="admin"
+                  placeholder="admin, secretary, or resident"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className="bg-slate-50 border-slate-200"
@@ -83,10 +84,21 @@ export function LoginPage() {
                 Sign In
               </Button>
             </form>
-            <div className="mt-8 text-center">
-              <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold">
-                Protected Portal • Barangay Panipuan
-              </p>
+            <div className="mt-8 pt-6 border-t">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center justify-center gap-2 text-xs text-sky-600 font-bold cursor-help uppercase tracking-widest">
+                      <Info className="h-3 w-3" /> Demo Credentials
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-slate-900 text-white border-none p-4 space-y-2">
+                    <p><span className="font-bold">Admin:</span> admin / admin123</p>
+                    <p><span className="font-bold">Secretary:</span> secretary / sec123</p>
+                    <p><span className="font-bold">Resident:</span> resident / res123</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </CardContent>
         </Card>

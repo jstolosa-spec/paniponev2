@@ -1,16 +1,16 @@
 import { IndexedEntity } from "./core-utils";
-import type { 
+import type {
   User, Chat, ChatMessage, DirectoryItem, Official, Announcement,
-  Resident, Appointment, SkilledWorker, JobPosting
+  Resident, Appointment, SkilledWorker, JobPosting, BlotterReport, LuponCase
 } from "@shared/types";
-import { 
+import {
   MOCK_CHAT_MESSAGES, MOCK_CHATS, MOCK_USERS, MOCK_DIRECTORY, MOCK_OFFICIALS, MOCK_ANNOUNCEMENTS,
   MOCK_RESIDENTS, MOCK_APPOINTMENTS, MOCK_SKILLS_REGISTRY, MOCK_JOB_POSTINGS
 } from "@shared/mock-data";
 export class UserEntity extends IndexedEntity<User> {
   static readonly entityName = "user";
   static readonly indexName = "users";
-  static readonly initialState: User = { id: "", name: "" };
+  static readonly initialState: User = { id: "", name: "", role: 'resident' };
   static seedData = MOCK_USERS;
 }
 export class DirectoryEntity extends IndexedEntity<DirectoryItem> {
@@ -31,11 +31,10 @@ export class AnnouncementEntity extends IndexedEntity<Announcement> {
   static readonly initialState: Announcement = { id: "", title: "", date: "", content: "", category: 'News' };
   static seedData = MOCK_ANNOUNCEMENTS;
 }
-// Phase 4 New Entities
 export class ResidentEntity extends IndexedEntity<Resident> {
   static readonly entityName = "resident";
   static readonly indexName = "residents";
-  static readonly initialState: Resident = { id: "", name: "", address: "", registrationDate: "", residencyStatus: false };
+  static readonly initialState: Resident = { id: "", name: "", address: "", registrationDate: "", residencyStatus: false, verificationStatus: 'pending' };
   static seedData = MOCK_RESIDENTS;
 }
 export class AppointmentEntity extends IndexedEntity<Appointment> {
@@ -55,6 +54,16 @@ export class JobPostingEntity extends IndexedEntity<JobPosting> {
   static readonly indexName = "job_postings";
   static readonly initialState: JobPosting = { id: "", businessName: "", title: "", description: "", skillsRequired: [], deadline: "" };
   static seedData = MOCK_JOB_POSTINGS;
+}
+export class BlotterReportEntity extends IndexedEntity<BlotterReport> {
+  static readonly entityName = "blotter";
+  static readonly indexName = "blotters";
+  static readonly initialState: BlotterReport = { id: "", date: "", description: "", parties: [], status: 'Open' };
+}
+export class LuponCaseEntity extends IndexedEntity<LuponCase> {
+  static readonly entityName = "lupon";
+  static readonly indexName = "lupon_cases";
+  static readonly initialState: LuponCase = { id: "", date: "", caseType: "", parties: [], summonsGenerated: false, status: 'Scheduled' };
 }
 export type ChatBoardState = Chat & { messages: ChatMessage[] };
 export class ChatBoardEntity extends IndexedEntity<ChatBoardState> {

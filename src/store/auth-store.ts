@@ -1,8 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { UserRole } from '@shared/types';
 interface User {
   id: string;
   name: string;
+  role: UserRole;
+  residentId?: string;
 }
 interface AuthState {
   isAuthenticated: boolean;

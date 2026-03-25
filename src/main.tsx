@@ -20,6 +20,8 @@ import { LoginPage } from '@/pages/Admin/LoginPage';
 import { AdminDashboard } from '@/pages/Admin/AdminDashboard';
 import { AppointmentsPage } from '@/pages/AppointmentsPage';
 import ContactPage from '@/pages/ContactPage';
+import RegisterResident from '@/pages/RegisterResident';
+import ArchivesPage from '@/pages/ArchivesPage';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -34,38 +36,16 @@ const router = createBrowserRouter([
     element: <RootLayout />,
     errorElement: <RouteErrorBoundary />,
     children: [
-      {
-        index: true,
-        element: <HomePage />,
-      },
-      {
-        path: "directory",
-        element: <DirectoryPage />,
-      },
-      {
-        path: "appointments",
-        element: <AppointmentsPage />,
-      },
-      {
-        path: "officials",
-        element: <OfficialsPage />,
-      },
-      {
-        path: "emergency",
-        element: <EmergencyPage />,
-      },
-      {
-        path: "contact",
-        element: <ContactPage />,
-      },
-      {
-        path: "login",
-        element: <LoginPage />,
-      },
-      {
-        path: "admin",
-        element: <AdminDashboard />,
-      },
+      { index: true, element: <HomePage /> },
+      { path: "directory", element: <DirectoryPage /> },
+      { path: "appointments", element: <AppointmentsPage /> },
+      { path: "officials", element: <OfficialsPage /> },
+      { path: "emergency", element: <EmergencyPage /> },
+      { path: "contact", element: <ContactPage /> },
+      { path: "residents/register", element: <RegisterResident /> },
+      { path: "archives", element: <ArchivesPage /> },
+      { path: "login", element: <LoginPage /> },
+      { path: "admin", element: <AdminDashboard /> },
     ]
   },
 ]);

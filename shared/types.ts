@@ -6,7 +6,11 @@ export interface ApiResponse<T = unknown> {
 export interface User {
   id: string;
   name: string;
+  role: UserRole;
+  residentId?: string;
 }
+export type UserRole = 'superAdmin' | 'secretary' | 'staff' | 'skilledWorker' | 'resident';
+export type VerificationStatus = 'pending' | 'verified' | 'rejected';
 export interface Chat {
   id: string;
   title: string;
@@ -41,7 +45,6 @@ export interface Announcement {
   content: string;
   category: 'News' | 'Alert' | 'Event';
 }
-// Phase 4 New Types
 export type DocumentType = 'Clearance' | 'Indigency' | 'Permits';
 export type AppointmentStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
 export type SkillType = 'Plumber' | 'Carpenter' | 'Electrician' | 'Mason' | 'Driver' | 'Cleaner';
@@ -49,8 +52,10 @@ export interface Resident {
   id: string;
   name: string;
   address: string;
-  registrationDate: string; // ISO format
-  residencyStatus: boolean; // Auto-calculated logic: > 6 months
+  registrationDate: string;
+  residencyStatus: boolean;
+  idUploadUrl?: string;
+  verificationStatus: VerificationStatus;
 }
 export interface Appointment {
   id: string;
@@ -59,9 +64,12 @@ export interface Appointment {
   documentType: DocumentType;
   scheduledDate: string;
   status: AppointmentStatus;
+  queueNumber?: number;
+  estimatedWaitTime?: string;
 }
 export interface SkilledWorker {
   id: string;
+  residentId?: string;
   name: string;
   skill: SkillType;
   contact: string;
@@ -75,4 +83,19 @@ export interface JobPosting {
   description: string;
   skillsRequired: SkillType[];
   deadline: string;
+}
+export interface BlotterReport {
+  id: string;
+  date: string;
+  description: string;
+  parties: string[];
+  status: 'Open' | 'Resolved' | 'Escalated';
+}
+export interface LuponCase {
+  id: string;
+  date: string;
+  caseType: string;
+  parties: string[];
+  summonsGenerated: boolean;
+  status: 'Scheduled' | 'Mediated' | 'Closed';
 }
