@@ -80,7 +80,7 @@ export function BusinessForm({ initialData, trigger }: { initialData?: any, trig
   const queryClient = useQueryClient();
   const form = useForm<z.infer<typeof businessSchema>>({
     resolver: zodResolver(businessSchema),
-    defaultValues: initialData || { name: '', category: 'Retail', address: '', phone: '', image: 'https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&q=80&w=800' },
+    defaultValues: initialData || { name: '', category: 'Retail', address: '', phone: '', image: 'https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&q=80&w=800', description: '' },
   });
   const mutation = useMutation({
     mutationFn: (data: any) => initialData
@@ -96,7 +96,7 @@ export function BusinessForm({ initialData, trigger }: { initialData?: any, trig
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent>
-        <DialogHeader><DialogTitle>Business Listing</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>{initialData ? 'Edit' : 'Add'} Business Listing</DialogTitle></DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(v => mutation.mutate(v))} className="space-y-4">
             <FormField control={form.control} name="name" render={({ field }) => (
@@ -118,6 +118,9 @@ export function BusinessForm({ initialData, trigger }: { initialData?: any, trig
             )} />
              <FormField control={form.control} name="image" render={({ field }) => (
               <FormItem><FormLabel>Image URL</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+            )} />
+            <FormField control={form.control} name="description" render={({ field }) => (
+              <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl></FormItem>
             )} />
             <Button type="submit" className="w-full bg-sky-600">Save Business</Button>
           </form>
@@ -187,7 +190,14 @@ export function JobForm({ initialData, trigger }: { initialData?: any, trigger: 
   const queryClient = useQueryClient();
   const form = useForm({
     resolver: zodResolver(jobSchema),
-    defaultValues: initialData ? { ...initialData, skillsRequired: initialData.skillsRequired.join(', ') } : { businessName: '', title: '', description: '', deadline: '', skillsRequired: '' },
+    defaultValues: initialData 
+      ? { 
+          ...initialData, 
+          skillsRequired: Array.isArray(initialData.skillsRequired) 
+            ? initialData.skillsRequired.join(', ') 
+            : initialData.skillsRequired || '' 
+        } 
+      : { businessName: '', title: '', description: '', deadline: '', skillsRequired: '' },
   });
   const mutation = useMutation({
     mutationFn: (data: any) => initialData
@@ -203,7 +213,7 @@ export function JobForm({ initialData, trigger }: { initialData?: any, trigger: 
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent>
-        <DialogHeader><DialogTitle>Job Posting</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>{initialData ? 'Edit' : 'Create'} Job Posting</DialogTitle></DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(v => mutation.mutate(v))} className="space-y-4">
             <FormField control={form.control} name="businessName" render={({ field }) => (

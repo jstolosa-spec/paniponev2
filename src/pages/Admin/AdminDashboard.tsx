@@ -8,10 +8,11 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, Trash2, FileText, CheckCircle } from 'lucide-react';
+import { LogOut, Trash2, FileText, CheckCircle, Plus, Edit2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { DocumentPreview } from '@/components/DocumentPreview';
-import type { Appointment, Resident, BlotterReport, LuponCase } from '@shared/types';
+import { AnnouncementForm, BusinessForm, OfficialForm, JobForm } from '@/components/admin/AdminDialogs';
+import type { Appointment, Resident, BlotterReport, LuponCase, Announcement, DirectoryItem, Official, JobPosting } from '@shared/types';
 export function AdminDashboard() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const userRole = useAuthStore((s) => s.user?.role);
@@ -22,10 +23,16 @@ export function AdminDashboard() {
   const [selectedDoc, setSelectedDoc] = useState<any>(null);
   const isManagement = ['superAdmin', 'secretary', 'staff'].includes(userRole || '');
   const isSuperAdmin = userRole === 'superAdmin';
+  // Core Data Queries
   const { data: apps } = useQuery({ queryKey: ['appointments'], queryFn: () => api<{ items: Appointment[] }>('/api/appointments') });
   const { data: residents } = useQuery({ queryKey: ['residents'], queryFn: () => api<{ items: Resident[] }>('/api/residents'), enabled: isManagement });
-  const { data: blotters } = useQuery({ queryKey: ['blotter'], queryFn: () => api<{ items: BlotterReport[] }>('/api/blotter'), enabled: ['superAdmin', 'secretary'].includes(userRole || '') });
-  const { data: lupon } = useQuery({ queryKey: ['lupon'], queryFn: () => api<{ items: LuponCase[] }>('/api/lupon'), enabled: ['superAdmin', 'secretary'].includes(userRole || '') });
+  const { data: blotters } = useQuery({ queryKey: ['blotter'], queryFn: () => api<{ items: BlotterReport[] }>('/api/blotter'), enabled: isManagement });
+  const { data: lupon } = useQuery({ queryKey: ['lupon'], queryFn: () => api<{ items: LuponCase[] }>('/api/lupon'), enabled: isManagement });
+  const { data: announcements } = useQuery({ queryKey: ['announcements'], queryFn: () => api<{ items: Announcement[] }>('/api/announcements'), enabled: isManagement });
+  const { data: directory } = useQuery({ queryKey: ['directory'], queryFn: () => api<{ items: DirectoryItem[] }>('/api/directory'), enabled: isManagement });
+  const { data: officials } = useQuery({ queryKey: ['officials'], queryFn: () => api<{ items: Official[] }>('/api/officials'), enabled: isManagement });
+  const { data: jobs } = useQuery({ queryKey: ['jobs'], queryFn: () => api<{ items: JobPosting[] }>('/api/jobs'), enabled: isManagement });
+  // Mutations
   const verifyResident = useMutation({
     mutationFn: ({id, status}: {id: string, status: string}) => api(`/api/residents/${id}/verify`, { method: 'PUT', body: JSON.stringify({ status }) }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['residents'] }); toast.success('Status updated'); }
@@ -35,10 +42,10 @@ export function AdminDashboard() {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['lupon'] }); toast.success('Summons Generated'); }
   });
   const deleteRecord = useMutation({
-    mutationFn: ({ type, id }: { type: 'blotter' | 'lupon', id: string }) => api(`/api/${type}/${id}`, { method: 'DELETE' }),
-    onSuccess: (_, variables) => { 
-      queryClient.invalidateQueries({ queryKey: [variables.type] }); 
-      toast.success('Record deleted successfully'); 
+    mutationFn: ({ type, id }: { type: string, id: string }) => api(`/api/${type}/${id}`, { method: 'DELETE' }),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: [variables.type === 'blotter' ? 'blotter' : variables.type] });
+      toast.success('Record deleted successfully');
     }
   });
   if (!isAuthenticated) return <Navigate to="/login" replace />;
@@ -57,32 +64,29 @@ export function AdminDashboard() {
         <TabsList className="bg-sky-50 dark:bg-slate-900 p-1 h-auto flex-wrap">
           <TabsTrigger value="appointments">Queue</TabsTrigger>
           {isManagement && <TabsTrigger value="residents">Residents</TabsTrigger>}
+          {isManagement && <TabsTrigger value="content">Content Manager</TabsTrigger>}
           {['superAdmin', 'secretary'].includes(userRole || '') && (
             <>
               <TabsTrigger value="blotter">e-Blotter</TabsTrigger>
               <TabsTrigger value="lupon">Lupon Cases</TabsTrigger>
             </>
           )}
-          {userRole === 'resident' && <TabsTrigger value="my-status">My Status</TabsTrigger>}
         </TabsList>
         <TabsContent value="appointments">
           <Card className="border-none shadow-soft overflow-hidden">
             <Table>
-              <TableHeader className="bg-slate-50"><TableRow><TableHead>Q#</TableHead><TableHead>Resident</TableHead><TableHead>Doc Type</TableHead><TableHead>Est. Wait</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+              <TableHeader className="bg-slate-50"><TableRow><TableHead>Q#</TableHead><TableHead>Resident</TableHead><TableHead>Doc Type</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
               <TableBody>
                 {apps?.items.map((item) => (
                   <TableRow key={item.id}>
                     <TableCell className="font-bold">#{item.queueNumber}</TableCell>
                     <TableCell>{item.residentName}</TableCell>
                     <TableCell>{item.documentType}</TableCell>
-                    <TableCell>{item.estimatedWaitTime}</TableCell>
                     <TableCell><Badge>{item.status}</Badge></TableCell>
                     <TableCell className="text-right">
-                      {isManagement && (
-                        <Button size="sm" variant="outline" className="gap-1" onClick={() => setSelectedDoc(item)}>
-                          <FileText className="h-3 w-3" /> Preview
-                        </Button>
-                      )}
+                      <Button size="sm" variant="outline" className="gap-1" onClick={() => setSelectedDoc(item)}>
+                        <FileText className="h-3 w-3" /> Preview
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -93,14 +97,13 @@ export function AdminDashboard() {
         <TabsContent value="residents">
           <Card className="border-none shadow-soft overflow-hidden">
             <Table>
-              <TableHeader className="bg-slate-50"><TableRow><TableHead>Name</TableHead><TableHead>Verification</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+              <TableHeader className="bg-slate-50"><TableRow><TableHead>Name</TableHead><TableHead>Address</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
               <TableBody>
                 {residents?.items.map((res) => (
                   <TableRow key={res.id}>
                     <TableCell className="font-medium">{res.name}</TableCell>
-                    <TableCell>
-                      <Badge variant={res.verificationStatus === 'verified' ? 'default' : 'secondary'}>{res.verificationStatus}</Badge>
-                    </TableCell>
+                    <TableCell>{res.address}</TableCell>
+                    <TableCell><Badge variant={res.verificationStatus === 'verified' ? 'default' : 'secondary'}>{res.verificationStatus}</Badge></TableCell>
                     <TableCell className="text-right space-x-2">
                       {res.verificationStatus === 'pending' && (
                         <>
@@ -114,6 +117,107 @@ export function AdminDashboard() {
               </TableBody>
             </Table>
           </Card>
+        </TabsContent>
+        <TabsContent value="content" className="space-y-12">
+          {/* Announcements Section */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-xl font-bold">Announcements</h3>
+              <AnnouncementForm trigger={<Button size="sm" className="bg-sky-600"><Plus className="h-4 w-4 mr-1" /> Add New</Button>} />
+            </div>
+            <Card className="border-none shadow-soft overflow-hidden">
+              <Table>
+                <TableHeader className="bg-slate-50"><TableRow><TableHead>Date</TableHead><TableHead>Title</TableHead><TableHead>Category</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+                <TableBody>
+                  {announcements?.items.map(a => (
+                    <TableRow key={a.id}>
+                      <TableCell className="text-xs">{a.date}</TableCell>
+                      <TableCell className="font-medium">{a.title}</TableCell>
+                      <TableCell><Badge variant="outline">{a.category}</Badge></TableCell>
+                      <TableCell className="text-right space-x-2">
+                        <AnnouncementForm initialData={a} trigger={<Button size="sm" variant="ghost"><Edit2 className="h-4 w-4" /></Button>} />
+                        <Button size="sm" variant="ghost" className="text-destructive" onClick={() => deleteRecord.mutate({ type: 'announcements', id: a.id })}><Trash2 className="h-4 w-4" /></Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Card>
+          </div>
+          {/* Directory Section */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-xl font-bold">Business Directory</h3>
+              <BusinessForm trigger={<Button size="sm" className="bg-sky-600"><Plus className="h-4 w-4 mr-1" /> Add New</Button>} />
+            </div>
+            <Card className="border-none shadow-soft overflow-hidden">
+              <Table>
+                <TableHeader className="bg-slate-50"><TableRow><TableHead>Name</TableHead><TableHead>Category</TableHead><TableHead>Phone</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+                <TableBody>
+                  {directory?.items.map(b => (
+                    <TableRow key={b.id}>
+                      <TableCell className="font-medium">{b.name}</TableCell>
+                      <TableCell>{b.category}</TableCell>
+                      <TableCell className="text-xs">{b.phone}</TableCell>
+                      <TableCell className="text-right space-x-2">
+                        <BusinessForm initialData={b} trigger={<Button size="sm" variant="ghost"><Edit2 className="h-4 w-4" /></Button>} />
+                        <Button size="sm" variant="ghost" className="text-destructive" onClick={() => deleteRecord.mutate({ type: 'directory', id: b.id })}><Trash2 className="h-4 w-4" /></Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Card>
+          </div>
+          {/* Officials Section */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-xl font-bold">Barangay Officials</h3>
+              <OfficialForm trigger={<Button size="sm" className="bg-sky-600"><Plus className="h-4 w-4 mr-1" /> Add New</Button>} />
+            </div>
+            <Card className="border-none shadow-soft overflow-hidden">
+              <Table>
+                <TableHeader className="bg-slate-50"><TableRow><TableHead>Name</TableHead><TableHead>Position</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+                <TableBody>
+                  {officials?.items.map(o => (
+                    <TableRow key={o.id}>
+                      <TableCell className="font-medium">{o.name}</TableCell>
+                      <TableCell>{o.position}</TableCell>
+                      <TableCell className="text-right space-x-2">
+                        <OfficialForm initialData={o} trigger={<Button size="sm" variant="ghost"><Edit2 className="h-4 w-4" /></Button>} />
+                        <Button size="sm" variant="ghost" className="text-destructive" onClick={() => deleteRecord.mutate({ type: 'officials', id: o.id })}><Trash2 className="h-4 w-4" /></Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Card>
+          </div>
+          {/* Jobs Section */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-xl font-bold">Job Bulletin</h3>
+              <JobForm trigger={<Button size="sm" className="bg-sky-600"><Plus className="h-4 w-4 mr-1" /> Add New</Button>} />
+            </div>
+            <Card className="border-none shadow-soft overflow-hidden">
+              <Table>
+                <TableHeader className="bg-slate-50"><TableRow><TableHead>Title</TableHead><TableHead>Business</TableHead><TableHead>Deadline</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+                <TableBody>
+                  {jobs?.items.map(j => (
+                    <TableRow key={j.id}>
+                      <TableCell className="font-medium">{j.title}</TableCell>
+                      <TableCell>{j.businessName}</TableCell>
+                      <TableCell className="text-xs">{j.deadline}</TableCell>
+                      <TableCell className="text-right space-x-2">
+                        <JobForm initialData={j} trigger={<Button size="sm" variant="ghost"><Edit2 className="h-4 w-4" /></Button>} />
+                        <Button size="sm" variant="ghost" className="text-destructive" onClick={() => deleteRecord.mutate({ type: 'jobs', id: j.id })}><Trash2 className="h-4 w-4" /></Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Card>
+          </div>
         </TabsContent>
         <TabsContent value="blotter">
           <Card className="border-none shadow-soft overflow-hidden">

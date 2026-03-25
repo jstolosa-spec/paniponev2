@@ -13,6 +13,18 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     await AnnouncementEntity.ensureSeed(c.env);
     return ok(c, await AnnouncementEntity.list(c.env));
   });
+  app.post('/api/announcements', async (c) => {
+    const body = await c.req.json();
+    const item = await AnnouncementEntity.create(c.env, { ...body, id: crypto.randomUUID() });
+    return ok(c, item);
+  });
+  app.put('/api/announcements/:id', async (c) => {
+    const id = c.req.param('id');
+    const body = await c.req.json();
+    const entity = new AnnouncementEntity(c.env, id);
+    await entity.save({ ...body, id });
+    return ok(c, await entity.getState());
+  });
   app.delete('/api/announcements/:id', async (c) => {
     const id = c.req.param('id');
     await AnnouncementEntity.delete(c.env, id);
@@ -82,23 +94,81 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     await DirectoryEntity.ensureSeed(c.env);
     return ok(c, await DirectoryEntity.list(c.env));
   });
+  app.post('/api/directory', async (c) => {
+    const body = await c.req.json();
+    const item = await DirectoryEntity.create(c.env, { ...body, id: crypto.randomUUID() });
+    return ok(c, item);
+  });
+  app.put('/api/directory/:id', async (c) => {
+    const id = c.req.param('id');
+    const body = await c.req.json();
+    const entity = new DirectoryEntity(c.env, id);
+    await entity.save({ ...body, id });
+    return ok(c, await entity.getState());
+  });
   app.delete('/api/directory/:id', async (c) => {
     const id = c.req.param('id');
     await DirectoryEntity.delete(c.env, id);
     return ok(c, { id });
   });
-  // OTHERS
+  // OFFICIALS
   app.get('/api/officials', async (c) => {
     await OfficialEntity.ensureSeed(c.env);
     return ok(c, await OfficialEntity.list(c.env));
   });
+  app.post('/api/officials', async (c) => {
+    const body = await c.req.json();
+    const item = await OfficialEntity.create(c.env, { ...body, id: crypto.randomUUID() });
+    return ok(c, item);
+  });
+  app.put('/api/officials/:id', async (c) => {
+    const id = c.req.param('id');
+    const body = await c.req.json();
+    const entity = new OfficialEntity(c.env, id);
+    await entity.save({ ...body, id });
+    return ok(c, await entity.getState());
+  });
+  app.delete('/api/officials/:id', async (c) => {
+    const id = c.req.param('id');
+    await OfficialEntity.delete(c.env, id);
+    return ok(c, { id });
+  });
+  // JOBS
   app.get('/api/jobs', async (c) => {
     await JobPostingEntity.ensureSeed(c.env);
     return ok(c, await JobPostingEntity.list(c.env));
   });
+  app.post('/api/jobs', async (c) => {
+    const body = await c.req.json();
+    const item = await JobPostingEntity.create(c.env, { ...body, id: crypto.randomUUID() });
+    return ok(c, item);
+  });
+  app.put('/api/jobs/:id', async (c) => {
+    const id = c.req.param('id');
+    const body = await c.req.json();
+    const entity = new JobPostingEntity(c.env, id);
+    await entity.save({ ...body, id });
+    return ok(c, await entity.getState());
+  });
+  app.delete('/api/jobs/:id', async (c) => {
+    const id = c.req.param('id');
+    await JobPostingEntity.delete(c.env, id);
+    return ok(c, { id });
+  });
+  // SKILLS
   app.get('/api/skills', async (c) => {
     await SkilledWorkerEntity.ensureSeed(c.env);
     return ok(c, await SkilledWorkerEntity.list(c.env));
+  });
+  app.post('/api/skills', async (c) => {
+    const body = await c.req.json();
+    const item = await SkilledWorkerEntity.create(c.env, { ...body, id: crypto.randomUUID() });
+    return ok(c, item);
+  });
+  app.delete('/api/skills/:id', async (c) => {
+    const id = c.req.param('id');
+    await SkilledWorkerEntity.delete(c.env, id);
+    return ok(c, { id });
   });
   app.get('/api/appointments', async (c) => {
     await AppointmentEntity.ensureSeed(c.env);
