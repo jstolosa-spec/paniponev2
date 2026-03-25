@@ -26,7 +26,6 @@ export function Navbar() {
         base.push({ label: 'Management', href: '/admin' });
       } else {
         base.push({ label: 'My Portal', href: '/admin' });
-        base.push({ label: 'Profile', href: '/profile' });
       }
     } else {
       base.push({ label: 'Register', href: '/register' });
@@ -91,9 +90,9 @@ export function Navbar() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, h: 0 }}
-            animate={{ opacity: 1, h: 'auto' }}
-            exit={{ opacity: 0, h: 0 }}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
             className="md:hidden border-b bg-background px-4 py-4 space-y-2"
           >
             {navLinks.map((link) => (
