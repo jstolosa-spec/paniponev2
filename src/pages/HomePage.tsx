@@ -1,138 +1,151 @@
-// Home page of the app.
-// Currently a demo placeholder "please wait" screen.
-// Replace this file with your actual app UI. Do not delete it to use some other file as homepage. Simply replace the entire contents of this file.
-
-import { useEffect, useMemo, useState } from 'react'
-import { Sparkles } from 'lucide-react'
-
-import { ThemeToggle } from '@/components/ThemeToggle'
-import { HAS_TEMPLATE_DEMO, TemplateDemo } from '@/components/TemplateDemo'
-import { Button } from '@/components/ui/button'
-import { Toaster, toast } from '@/components/ui/sonner'
-
-function formatDuration(ms: number): string {
-  const total = Math.max(0, Math.floor(ms / 1000))
-  const m = Math.floor(total / 60)
-  const s = total % 60
-  return `${m}:${s.toString().padStart(2, '0')}`
-}
-
+import React from 'react';
+import { ArrowRight, Bell, ShieldAlert, Store, Users, MapPin } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { MOCK_ANNOUNCEMENTS } from '@shared/mock-data';
 export function HomePage() {
-  const [coins, setCoins] = useState(0)
-  const [isRunning, setIsRunning] = useState(false)
-  const [startedAt, setStartedAt] = useState<number | null>(null)
-  const [elapsedMs, setElapsedMs] = useState(0)
-
-  useEffect(() => {
-    if (!isRunning || startedAt === null) return
-
-    const t = setInterval(() => {
-      setElapsedMs(Date.now() - startedAt)
-    }, 250)
-
-    return () => clearInterval(t)
-  }, [isRunning, startedAt])
-
-  const formatted = useMemo(() => formatDuration(elapsedMs), [elapsedMs])
-
-  const onPleaseWait = () => {
-    setCoins((c) => c + 1)
-
-    if (!isRunning) {
-      // Resume from the current elapsed time
-      setStartedAt(Date.now() - elapsedMs)
-      setIsRunning(true)
-      toast.success('Building your app…', {
-        description: "Hang tight — we're setting everything up.",
-      })
-      return
-    }
-
-    setIsRunning(false)
-    toast.info('Still working…', {
-      description: 'You can come back in a moment.',
-    })
-  }
-
-  const onReset = () => {
-    setCoins(0)
-    setIsRunning(false)
-    setStartedAt(null)
-    setElapsedMs(0)
-    toast('Reset complete')
-  }
-
-  const onAddCoin = () => {
-    setCoins((c) => c + 1)
-    toast('Coin added')
-  }
-
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground p-4 overflow-hidden relative">
-      <ThemeToggle />
-      <div className="absolute inset-0 bg-gradient-rainbow opacity-10 dark:opacity-20 pointer-events-none" />
-
-      <div className="text-center space-y-8 relative z-10 animate-fade-in w-full">
-        <div className="flex justify-center">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-primary floating">
-            <Sparkles className="w-8 h-8 text-white rotating" />
+    <div className="flex flex-col w-full">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden bg-gradient-hero py-20 lg:py-32">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+              className="space-y-8"
+            >
+              <Badge variant="outline" className="px-4 py-1 text-sky-600 border-sky-200 bg-sky-50/50">
+                Official Community Portal
+              </Badge>
+              <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.1]">
+                Serving the People of <span className="text-sky-500">Panipuan</span>
+              </h1>
+              <p className="text-xl text-slate-600 dark:text-slate-400 max-w-lg leading-relaxed">
+                Access local services, stay updated with community news, and connect with your barangay leadership all in one place.
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <Button size="lg" className="bg-sky-500 hover:bg-sky-600 text-white rounded-full px-8" asChild>
+                  <Link to="/directory">Explore Directory <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                </Button>
+                <Button size="lg" variant="outline" className="rounded-full px-8" asChild>
+                  <Link to="/officials">Meet Officials</Link>
+                </Button>
+              </div>
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="relative hidden lg:block"
+            >
+              <div className="aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border-8 border-white dark:border-slate-900">
+                <img 
+                  src="https://images.unsplash.com/photo-1542332213-9b5a5a3fad35?auto=format&fit=crop&q=80&w=1200" 
+                  alt="Barangay Landscape"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="absolute -bottom-6 -left-6 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border max-w-xs">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="bg-sky-100 p-2 rounded-lg"><MapPin className="h-5 w-5 text-sky-600" /></div>
+                  <span className="font-bold">San Fernando</span>
+                </div>
+                <p className="text-sm text-muted-foreground">Heart of Pampanga's thriving communities.</p>
+              </div>
+            </motion.div>
           </div>
         </div>
-
-        <div className="space-y-3">
-          <h1 className="text-5xl md:text-7xl font-display font-bold text-balance leading-tight">
-            Creating your <span className="text-gradient">app</span>
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto text-pretty">
-            Your application would be ready soon.
-          </p>
-        </div>
-
-        {HAS_TEMPLATE_DEMO ? (
-          <div className="max-w-5xl mx-auto text-left">
-            <TemplateDemo />
+      </section>
+      {/* Main Features */}
+      <section className="py-20 bg-white dark:bg-slate-950">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Card className="border-none shadow-soft hover:shadow-lg transition-all group">
+              <CardHeader>
+                <div className="bg-sky-100 dark:bg-sky-900/30 w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <Store className="h-6 w-6 text-sky-600" />
+                </div>
+                <CardTitle>Local Directory</CardTitle>
+                <CardDescription>Support local businesses and find essential services nearby.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link to="/directory" className="text-sky-600 font-medium flex items-center gap-1 hover:underline">
+                  Browse Listings <ArrowRight className="h-4 w-4" />
+                </Link>
+              </CardContent>
+            </Card>
+            <Card className="border-none shadow-soft hover:shadow-lg transition-all group">
+              <CardHeader>
+                <div className="bg-emerald-100 dark:bg-emerald-900/30 w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <Users className="h-6 w-6 text-emerald-600" />
+                </div>
+                <CardTitle>Transparency</CardTitle>
+                <CardDescription>Get to know your elected officials and their commitment to you.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link to="/officials" className="text-emerald-600 font-medium flex items-center gap-1 hover:underline">
+                  View Roster <ArrowRight className="h-4 w-4" />
+                </Link>
+              </CardContent>
+            </Card>
+            <Card className="border-none shadow-soft bg-rose-50 dark:bg-rose-950/20 hover:shadow-lg transition-all group">
+              <CardHeader>
+                <div className="bg-rose-100 dark:bg-rose-900/30 w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <ShieldAlert className="h-6 w-6 text-rose-600" />
+                </div>
+                <CardTitle>Emergency Help</CardTitle>
+                <CardDescription>Quick access to hotlines, medical, and fire response services.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link to="/emergency" className="text-rose-600 font-medium flex items-center gap-1 hover:underline">
+                  Emergency Info <ArrowRight className="h-4 w-4" />
+                </Link>
+              </CardContent>
+            </Card>
           </div>
-        ) : (
-          <>
-            <div className="flex justify-center gap-4">
-              <Button
-                size="lg"
-                onClick={onPleaseWait}
-                className="btn-gradient px-8 py-4 text-lg font-semibold hover:-translate-y-0.5 transition-all duration-200"
-                aria-live="polite"
-              >
-                Please Wait
-              </Button>
+        </div>
+      </section>
+      {/* Announcements */}
+      <section className="py-20 bg-slate-50 dark:bg-slate-900/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-end mb-12">
+            <div>
+              <h2 className="text-3xl font-bold mb-2">Latest Announcements</h2>
+              <p className="text-muted-foreground">Stay informed about what's happening in our barangay.</p>
             </div>
-
-            <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
-              <div>
-                Time elapsed:{' '}
-                <span className="font-medium tabular-nums text-foreground">{formatted}</span>
-              </div>
-              <div>
-                Coins:{' '}
-                <span className="font-medium tabular-nums text-foreground">{coins}</span>
-              </div>
-            </div>
-
-            <div className="flex justify-center gap-2">
-              <Button variant="outline" size="sm" onClick={onReset}>
-                Reset
-              </Button>
-              <Button variant="outline" size="sm" onClick={onAddCoin}>
-                Add Coin
-              </Button>
-            </div>
-          </>
-        )}
-      </div>
-
-      <footer className="absolute bottom-8 text-center text-muted-foreground/80">
-        <p>Powered by Cloudflare</p>
-      </footer>
-
-      <Toaster richColors closeButton />
+            <Button variant="ghost" className="hidden sm:flex text-sky-600 hover:text-sky-700">View All Updates</Button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {MOCK_ANNOUNCEMENTS.map((item) => (
+              <Card key={item.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                <div className="flex">
+                  <div className={cn(
+                    "w-2 shrink-0",
+                    item.category === 'Alert' ? "bg-rose-500" : "bg-sky-500"
+                  )} />
+                  <CardHeader className="flex-1">
+                    <div className="flex justify-between items-start mb-2">
+                      <Badge variant="secondary" className="text-[10px] uppercase font-bold tracking-wider">
+                        {item.category}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">{item.date}</span>
+                    </div>
+                    <CardTitle className="text-xl mb-2">{item.title}</CardTitle>
+                    <CardDescription className="line-clamp-2 leading-relaxed">
+                      {item.content}
+                    </CardDescription>
+                  </CardHeader>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
-  )
+  );
 }

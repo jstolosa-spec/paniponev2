@@ -1,5 +1,5 @@
 import React from 'react';
-import { Landmark, Mail, MapPin, Phone, ShieldCheck } from 'lucide-react';
+import { Landmark, Mail, MapPin, Phone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 export function Footer() {
   return (
@@ -9,7 +9,7 @@ export function Footer() {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Landmark className="h-6 w-6 text-sky-500" />
-              <span className="text-xl font-bold">PanipOne</span>
+              <span className="text-xl font-bold">PanipuanConnect</span>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
               The official digital portal for Barangay Panipuan. Empowering residents with information and accessibility.
@@ -21,9 +21,7 @@ export function Footer() {
               <li><Link to="/" className="hover:text-sky-500 transition-colors">Home</Link></li>
               <li><Link to="/directory" className="hover:text-sky-500 transition-colors">Local Directory</Link></li>
               <li><Link to="/officials" className="hover:text-sky-500 transition-colors">Barangay Officials</Link></li>
-              <li><Link to="/login" className="hover:text-sky-500 transition-colors flex items-center gap-1.5 mt-4">
-                <ShieldCheck className="h-3.5 w-3.5" /> Admin Portal
-              </Link></li>
+              <li><Link to="/emergency" className="hover:text-sky-500 transition-colors text-destructive font-medium">Emergency Contacts</Link></li>
             </ul>
           </div>
           <div>

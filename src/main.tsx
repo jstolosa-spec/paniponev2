@@ -11,18 +11,32 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { RouteErrorBoundary } from '@/components/RouteErrorBoundary';
 import '@/index.css'
-import { HomePage } from '@/pages/HomePage'
-
+import { RootLayout } from '@/components/layout/RootLayout';
+import { HomePage } from '@/pages/HomePage';
+import { DirectoryPage } from '@/pages/DirectoryPage';
+import { OfficialsPage } from '@/pages/OfficialsPage';
 const queryClient = new QueryClient();
-
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <HomePage />,
+    element: <RootLayout />,
     errorElement: <RouteErrorBoundary />,
+    children: [
+      {
+        index: true,
+        element: <HomePage />,
+      },
+      {
+        path: "directory",
+        element: <DirectoryPage />,
+      },
+      {
+        path: "officials",
+        element: <OfficialsPage />,
+      },
+    ]
   },
 ]);
-
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
@@ -32,4 +46,3 @@ createRoot(document.getElementById('root')!).render(
     </QueryClientProvider>
   </StrictMode>,
 )
-   
