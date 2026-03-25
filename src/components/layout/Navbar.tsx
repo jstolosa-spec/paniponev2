@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Landmark, PhoneCall, User as UserIcon } from 'lucide-react';
+import { Menu, X, Landmark, PhoneCall, User as UserIcon, UserCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { cn } from '@/lib/utils';
@@ -10,9 +10,10 @@ import { Badge } from '@/components/ui/badge';
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
-  // Zustand primitive selectors
   const isAuthenticated = useAuthStore(s => s.isAuthenticated);
-  const userRole = useAuthStore(s => s.user?.role);
+  const user = useAuthStore(s => s.user);
+  const hasRole = useAuthStore(s => s.hasRole);
+  const userRole = user?.role;
   const getNavLinks = () => {
     const base = [
       { label: 'Home', href: '/' },
@@ -21,12 +22,14 @@ export function Navbar() {
       { label: 'Directory', href: '/directory' },
     ];
     if (isAuthenticated) {
-      if (['superAdmin', 'secretary', 'staff'].includes(userRole || '')) {
+      if (hasRole(['superAdmin', 'secretary', 'staff'])) {
         base.push({ label: 'Management', href: '/admin' });
       } else {
         base.push({ label: 'My Portal', href: '/admin' });
+        base.push({ label: 'Profile', href: '/profile' });
       }
     } else {
+      base.push({ label: 'Register', href: '/register' });
       base.push({ label: 'Contact', href: '/contact' });
     }
     return base;
@@ -65,7 +68,7 @@ export function Navbar() {
               <div className="flex items-center gap-4 border-l pl-6">
                 <ThemeToggle className="relative top-0 right-0" />
                 {isAuthenticated ? (
-                  <Badge variant="outline" className="gap-2 bg-sky-50/50 text-sky-600 border-sky-200">
+                  <Badge variant="outline" className="gap-2 bg-sky-50/50 text-sky-600 border-sky-200 py-1">
                     <UserIcon className="h-3 w-3" />
                     {userRole?.replace(/([A-Z])/g, ' $1').trim()}
                   </Badge>

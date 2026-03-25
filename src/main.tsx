@@ -20,7 +20,7 @@ import { LoginPage } from '@/pages/Admin/LoginPage';
 import { AdminDashboard } from '@/pages/Admin/AdminDashboard';
 import { AppointmentsPage } from '@/pages/AppointmentsPage';
 import ContactPage from '@/pages/ContactPage';
-import RegisterResident from '@/pages/RegisterResident';
+import RegisterPage from '@/pages/RegisterPage';
 import ArchivesPage from '@/pages/ArchivesPage';
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -42,7 +42,7 @@ const router = createBrowserRouter([
       { path: "officials", element: <OfficialsPage /> },
       { path: "emergency", element: <EmergencyPage /> },
       { path: "contact", element: <ContactPage /> },
-      { path: "residents/register", element: <RegisterResident /> },
+      { path: "register", element: <RegisterPage /> },
       { path: "archives", element: <ArchivesPage /> },
       { path: "login", element: <LoginPage /> },
       { path: "admin", element: <AdminDashboard /> },
