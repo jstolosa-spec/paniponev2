@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Landmark, Loader2, Lock, Info, CheckCircle2 } from 'lucide-react';
+import { Landmark, Loader2, Lock, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,6 +25,7 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  // Strict primitive selector
   const login = useAuthStore((s) => s.login);
   const navigate = useNavigate();
   const handleLogin = async (e?: React.FormEvent) => {
@@ -49,7 +50,6 @@ export function LoginPage() {
     setPassword(p);
     toast.info('Credentials filled. Redirecting...', { duration: 1000 });
     setTimeout(() => {
-       // Using form data directly for immediate feel
        api<LoginUserResponse>('/api/auth/login', {
           method: 'POST',
           body: JSON.stringify({ username: u, password: p }),
@@ -66,14 +66,14 @@ export function LoginPage() {
         animate={{ opacity: 1, scale: 1 }}
         className="w-full max-w-md"
       >
-        <Card className="border-none shadow-2xl bg-white/80 backdrop-blur-sm dark:bg-slate-900/80 overflow-hidden">
-          <div className="h-2 bg-sky-500" />
+        <Card className="border-none shadow-2xl bg-card overflow-hidden">
+          <div className="h-2 bg-primary" />
           <CardHeader className="text-center space-y-4">
-            <div className="mx-auto bg-sky-100 dark:bg-sky-900/30 p-3 rounded-2xl w-fit">
-              <Landmark className="h-10 w-10 text-sky-600" />
+            <div className="mx-auto bg-primary/10 p-3 rounded-2xl w-fit">
+              <Landmark className="h-10 w-10 text-primary" />
             </div>
             <div>
-              <CardTitle className="text-3xl font-bold">Panipuan Auth</CardTitle>
+              <CardTitle className="text-3xl font-bold text-card-foreground">Panipuan Auth</CardTitle>
               <CardDescription>Barangay Governance System Access</CardDescription>
             </div>
           </CardHeader>
@@ -86,7 +86,7 @@ export function LoginPage() {
                   placeholder="admin, secretary, staff, or resident"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="bg-slate-50 border-slate-200"
+                  className="bg-secondary text-secondary-foreground border-input"
                   required
                 />
               </div>
@@ -97,19 +97,19 @@ export function LoginPage() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="bg-slate-50 border-slate-200"
+                  className="bg-secondary text-secondary-foreground border-input"
                   required
                 />
               </div>
               <div className="flex items-center space-x-2">
                 <Checkbox id="remember" checked={rememberMe} onCheckedChange={(v) => setRememberMe(!!v)} />
-                <label htmlFor="remember" className="text-sm font-medium leading-none cursor-pointer">
+                <label htmlFor="remember" className="text-sm font-medium leading-none cursor-pointer text-foreground">
                   Remember me on this device
                 </label>
               </div>
               <Button
                 type="submit"
-                className="w-full bg-sky-600 hover:bg-sky-700 h-12 text-lg font-bold transition-all"
+                className="w-full h-12 text-lg font-bold transition-all"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -129,24 +129,24 @@ export function LoginPage() {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="flex items-center justify-center gap-2 text-xs text-sky-600 font-bold cursor-help uppercase tracking-widest bg-sky-50 py-2 rounded-lg hover:bg-sky-100 transition-colors">
+                    <div className="flex items-center justify-center gap-2 text-xs text-primary font-bold cursor-help uppercase tracking-widest bg-accent py-2 rounded-lg hover:bg-accent/80 transition-colors">
                       <Info className="h-3 w-3" /> Click for Demo Credentials
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent className="bg-slate-900 text-white border-none p-4 space-y-4 max-w-xs" side="bottom">
-                    <p className="text-xs text-slate-400 font-bold uppercase">Click a role to auto-fill</p>
+                  <TooltipContent className="bg-popover text-popover-foreground border border-border p-4 space-y-4 max-w-xs" side="bottom">
+                    <p className="text-xs font-bold uppercase text-muted-foreground">Click a role to auto-fill</p>
                     <div className="space-y-2">
-                      <button onClick={() => autoFillDemo('admin', 'admin123')} className="w-full text-left p-2 hover:bg-white/10 rounded transition-colors text-sm">
-                        <span className="font-bold text-sky-400">Admin:</span> admin / admin123
+                      <button onClick={() => autoFillDemo('admin', 'admin123')} className="w-full text-left p-2 hover:bg-accent rounded transition-colors text-sm">
+                        <span className="font-bold text-primary">Admin:</span> admin / admin123
                       </button>
-                      <button onClick={() => autoFillDemo('secretary', 'sec123')} className="w-full text-left p-2 hover:bg-white/10 rounded transition-colors text-sm">
-                        <span className="font-bold text-emerald-400">Secretary:</span> secretary / sec123
+                      <button onClick={() => autoFillDemo('secretary', 'sec123')} className="w-full text-left p-2 hover:bg-accent rounded transition-colors text-sm">
+                        <span className="font-bold text-emerald-500">Secretary:</span> secretary / sec123
                       </button>
-                      <button onClick={() => autoFillDemo('staff', 'staff123')} className="w-full text-left p-2 hover:bg-white/10 rounded transition-colors text-sm">
-                        <span className="font-bold text-amber-400">Staff:</span> staff / staff123
+                      <button onClick={() => autoFillDemo('staff', 'staff123')} className="w-full text-left p-2 hover:bg-accent rounded transition-colors text-sm">
+                        <span className="font-bold text-amber-500">Staff:</span> staff / staff123
                       </button>
-                      <button onClick={() => autoFillDemo('resident', 'res123')} className="w-full text-left p-2 hover:bg-white/10 rounded transition-colors text-sm">
-                        <span className="font-bold text-slate-400">Resident:</span> resident / res123
+                      <button onClick={() => autoFillDemo('resident', 'res123')} className="w-full text-left p-2 hover:bg-accent rounded transition-colors text-sm">
+                        <span className="font-bold text-muted-foreground">Resident:</span> resident / res123
                       </button>
                     </div>
                   </TooltipContent>
