@@ -10,8 +10,9 @@ import { Badge } from '@/components/ui/badge';
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  // Zustand primitive selectors
   const isAuthenticated = useAuthStore(s => s.isAuthenticated);
-  const user = useAuthStore(s => s.user);
+  const userRole = useAuthStore(s => s.user?.role);
   const getNavLinks = () => {
     const base = [
       { label: 'Home', href: '/' },
@@ -20,7 +21,7 @@ export function Navbar() {
       { label: 'Directory', href: '/directory' },
     ];
     if (isAuthenticated) {
-      if (['superAdmin', 'secretary', 'staff'].includes(user?.role || '')) {
+      if (['superAdmin', 'secretary', 'staff'].includes(userRole || '')) {
         base.push({ label: 'Management', href: '/admin' });
       } else {
         base.push({ label: 'My Portal', href: '/admin' });
@@ -66,7 +67,7 @@ export function Navbar() {
                 {isAuthenticated ? (
                   <Badge variant="outline" className="gap-2 bg-sky-50/50 text-sky-600 border-sky-200">
                     <UserIcon className="h-3 w-3" />
-                    {user?.role.replace(/([A-Z])/g, ' $1').trim()}
+                    {userRole?.replace(/([A-Z])/g, ' $1').trim()}
                   </Badge>
                 ) : (
                   <Button variant="destructive" size="sm" className="gap-2" asChild>

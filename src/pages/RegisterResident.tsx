@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { UserPlus, ShieldCheck, MapPin, Image as ImageIcon, CheckCircle2 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Image as ImageIcon, CheckCircle2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,24 +15,37 @@ export default function RegisterResident() {
     idUploadUrl: ''
   });
   const [loading, setLoading] = useState(false);
+  const handleNext = () => {
+    if (!formData.name.trim() || !formData.address.trim()) {
+      toast.error('Please complete all personal information fields.');
+      return;
+    }
+    setStep(2);
+  };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.idUploadUrl.trim()) {
+      toast.error('Please provide an ID verification image.');
+      return;
+    }
     setLoading(true);
     try {
       await api('/api/residents/register', {
         method: 'POST',
         body: JSON.stringify(formData)
       });
+      setFormData({ name: '', address: '', idUploadUrl: '' });
       setStep(3);
       toast.success('Registration submitted successfully!');
     } catch (error) {
+      console.error('[REGISTRATION ERROR]', error);
       toast.error('Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 lg:py-12">
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-extrabold tracking-tight mb-4">Resident Profiling</h1>
@@ -61,21 +74,21 @@ export default function RegisterResident() {
                 <div className="space-y-6">
                   <div className="space-y-2">
                     <Label>Full Legal Name</Label>
-                    <Input 
-                      placeholder="Juan Dela Cruz" 
+                    <Input
+                      placeholder="Juan Dela Cruz"
                       value={formData.name}
                       onChange={(e) => setFormData({...formData, name: e.target.value})}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>Barangay Address (Purok / Street)</Label>
-                    <Input 
-                      placeholder="Purok 1, Panipuan Road" 
+                    <Input
+                      placeholder="Purok 1, Panipuan Road"
                       value={formData.address}
                       onChange={(e) => setFormData({...formData, address: e.target.value})}
                     />
                   </div>
-                  <Button className="w-full bg-sky-600" onClick={() => setStep(2)}>Next Step</Button>
+                  <Button className="w-full bg-sky-600 h-11" onClick={handleNext}>Next Step</Button>
                 </div>
               )}
               {step === 2 && (
@@ -86,17 +99,17 @@ export default function RegisterResident() {
                       <p className="font-bold text-slate-900">Upload Government ID</p>
                       <p className="text-xs text-muted-foreground">Passport, Driver's License, or National ID</p>
                     </div>
-                    <Input 
-                      placeholder="Paste image URL for demo..." 
-                      className="max-w-xs" 
+                    <Input
+                      placeholder="Paste image URL for demo..."
+                      className="max-w-xs"
                       value={formData.idUploadUrl}
                       onChange={(e) => setFormData({...formData, idUploadUrl: e.target.value})}
                     />
                   </div>
                   <div className="flex gap-4">
                     <Button variant="outline" className="flex-1" onClick={() => setStep(1)}>Back</Button>
-                    <Button 
-                      className="flex-1 bg-sky-600" 
+                    <Button
+                      className="flex-1 bg-sky-600"
                       disabled={loading || !formData.idUploadUrl}
                       onClick={handleSubmit}
                     >

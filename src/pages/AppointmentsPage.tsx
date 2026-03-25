@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Calendar as CalendarIcon, FileText, CheckCircle2, Clock, ShieldCheck, Search, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -10,14 +10,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
-import { format, differenceInDays } from 'date-fns';
+import { format, differenceInDays, parseISO } from 'date-fns';
 import { toast } from 'sonner';
 import type { Appointment, Resident, DocumentType } from '@shared/types';
 export function AppointmentsPage() {
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [docType, setDocType] = useState<DocumentType>('Clearance');
   const [residentName, setResidentName] = useState('');
-  const [searchResident, setSearchResident] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const queryClient = useQueryClient();
   const { data: appointments } = useQuery({ queryKey: ['appointments'], queryFn: () => api<{ items: Appointment[] }>('/api/appointments') });
   const { data: residents } = useQuery({ queryKey: ['residents'], queryFn: () => api<{ items: Resident[] }>('/api/residents') });
@@ -30,18 +30,29 @@ export function AppointmentsPage() {
       setSelectedDate(undefined);
     }
   });
-  const verifiedResident = residents?.items.find(r => r.name.toLowerCase() === searchResident.toLowerCase());
-  const isEligible = verifiedResident ? differenceInDays(new Date(), new Date(verifiedResident.registrationDate)) > 180 : false;
+  const verifiedResident = useMemo(() => {
+    if (!searchQuery) return null;
+    return residents?.items.find(r => r.name.toLowerCase().includes(searchQuery.toLowerCase())) ?? null;
+  }, [searchQuery, residents]);
+  const isEligible = useMemo(() => {
+    if (!verifiedResident?.registrationDate) return false;
+    try {
+      return differenceInDays(new Date(), parseISO(verifiedResident.registrationDate)) > 180;
+    } catch (e) {
+      return false;
+    }
+  }, [verifiedResident]);
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedDate || !residentName) return toast.error('Please fill in all fields');
-    const isRegistryMatch = residents?.items.some(r => r.name.toLowerCase() === residentName.toLowerCase());
-    if (!isRegistryMatch) {
+    const registryMatch = residents?.items.find(r => r.name.toLowerCase() === residentName.toLowerCase());
+    if (!registryMatch) {
       toast.error('Name not found in resident registry. Please contact barangay hall.');
       return;
     }
     createAppointment.mutate({
-      residentName,
+      residentId: registryMatch.id,
+      residentName: registryMatch.name,
       documentType: docType,
       scheduledDate: format(selectedDate, 'yyyy-MM-dd'),
       status: 'pending'
@@ -50,7 +61,6 @@ export function AppointmentsPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-        {/* Residency Checker */}
         <div className="lg:col-span-1 space-y-6">
           <Card className="border-sky-100 shadow-soft">
             <CardHeader>
@@ -66,12 +76,12 @@ export function AppointmentsPage() {
                 <Input
                   placeholder="Enter full name..."
                   className="pl-10"
-                  value={searchResident}
-                  onChange={(e) => setSearchResident(e.target.value)}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              {searchResident && (
-                <div className={cn("p-4 rounded-xl border text-sm", isEligible ? "bg-emerald-50 border-emerald-200 text-emerald-800" : "bg-amber-50 border-amber-200 text-amber-800")}>
+              {searchQuery && (
+                <div className={cn("p-4 rounded-xl border text-sm", verifiedResident && isEligible ? "bg-emerald-50 border-emerald-200 text-emerald-800" : verifiedResident ? "bg-amber-50 border-amber-200 text-amber-800" : "bg-rose-50 border-rose-200 text-rose-800")}>
                   {verifiedResident ? (
                     <>
                       <div className="flex justify-between items-start mb-2">
@@ -96,7 +106,6 @@ export function AppointmentsPage() {
             </CardContent>
           </Card>
         </div>
-        {/* Appointment Form */}
         <div className="lg:col-span-2 space-y-12">
           <section>
             <div className="mb-6">
@@ -149,8 +158,8 @@ export function AppointmentsPage() {
           <section>
             <h3 className="text-xl font-bold mb-4">Ongoing Requests</h3>
             <div className="space-y-3">
-              {!appointments?.items.length && <p className="text-sm text-muted-foreground italic">No current appointments found.</p>}
-              {appointments?.items.filter(a => a.status !== 'completed').map(app => (
+              {!appointments?.items?.length && <p className="text-sm text-muted-foreground italic">No current appointments found.</p>}
+              {appointments?.items?.filter(a => a.status !== 'completed').map(app => (
                 <div key={app.id} className="flex items-center justify-between p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm transition-all hover:border-sky-200">
                   <div className="flex items-center gap-4">
                     <div className="bg-sky-50 dark:bg-sky-900/30 p-2.5 rounded-xl text-sky-600"><FileText className="h-5 w-5" /></div>

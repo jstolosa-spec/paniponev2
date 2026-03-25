@@ -10,6 +10,15 @@ import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import type { UserRole } from '@shared/types';
+interface LoginUserResponse {
+  user: {
+    id: string;
+    name: string;
+    role: UserRole;
+    residentId?: string;
+  }
+}
 export function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -20,14 +29,15 @@ export function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const response = await api<{ user: { id: string; name: string; role: any; residentId?: string } }>('/api/auth/login', {
+      const response = await api<LoginUserResponse>('/api/auth/login', {
         method: 'POST',
         body: JSON.stringify({ username, password }),
       });
       login(response.user);
-      toast.success(`Welcome back, ${response.user.role}`);
+      toast.success(`Welcome back, ${response.user.name}`);
       navigate('/admin');
     } catch (error) {
+      console.error('[LOGIN FAILED]', error);
       toast.error('Invalid credentials. Please try again.');
     } finally {
       setIsLoading(false);

@@ -5,7 +5,7 @@ import {
   ResidentEntity, AppointmentEntity, SkilledWorkerEntity, JobPostingEntity,
   BlotterReportEntity, LuponCaseEntity
 } from "./entities";
-import { ok, bad, notFound } from './core-utils';
+import { ok, bad } from './core-utils';
 import type { UserRole } from "@shared/types";
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // ANNOUNCEMENTS
@@ -13,9 +13,13 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     await AnnouncementEntity.ensureSeed(c.env);
     return ok(c, await AnnouncementEntity.list(c.env));
   });
-  // BLOTTER (Role Restricted)
+  app.delete('/api/announcements/:id', async (c) => {
+    const id = c.req.param('id');
+    await AnnouncementEntity.delete(c.env, id);
+    return ok(c, { id });
+  });
+  // BLOTTER
   app.get('/api/blotter', async (c) => {
-    // In a real app, check JWT/Session for role secretary or superAdmin
     return ok(c, await BlotterReportEntity.list(c.env));
   });
   app.post('/api/blotter', async (c) => {
@@ -23,7 +27,12 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const item = await BlotterReportEntity.create(c.env, { ...body, id: crypto.randomUUID() });
     return ok(c, item);
   });
-  // LUPON (Role Restricted)
+  app.delete('/api/blotter/:id', async (c) => {
+    const id = c.req.param('id');
+    await BlotterReportEntity.delete(c.env, id);
+    return ok(c, { id });
+  });
+  // LUPON
   app.get('/api/lupon', async (c) => {
     return ok(c, await LuponCaseEntity.list(c.env));
   });
@@ -39,6 +48,11 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     await entity.save({ ...state, summonsGenerated: true });
     return ok(c, await entity.getState());
   });
+  app.delete('/api/lupon/:id', async (c) => {
+    const id = c.req.param('id');
+    await LuponCaseEntity.delete(c.env, id);
+    return ok(c, { id });
+  });
   // RESIDENTS
   app.get('/api/residents', async (c) => {
     await ResidentEntity.ensureSeed(c.env);
@@ -46,9 +60,9 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   });
   app.post('/api/residents/register', async (c) => {
     const body = await c.req.json();
-    const item = await ResidentEntity.create(c.env, { 
-      ...body, 
-      id: crypto.randomUUID(), 
+    const item = await ResidentEntity.create(c.env, {
+      ...body,
+      id: crypto.randomUUID(),
       registrationDate: new Date().toISOString().split('T')[0],
       verificationStatus: 'pending',
       residencyStatus: false
@@ -63,11 +77,17 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     await entity.save({ ...state, verificationStatus: status });
     return ok(c, await entity.getState());
   });
-  // DIRECTORY & OTHERS
+  // DIRECTORY
   app.get('/api/directory', async (c) => {
     await DirectoryEntity.ensureSeed(c.env);
     return ok(c, await DirectoryEntity.list(c.env));
   });
+  app.delete('/api/directory/:id', async (c) => {
+    const id = c.req.param('id');
+    await DirectoryEntity.delete(c.env, id);
+    return ok(c, { id });
+  });
+  // OTHERS
   app.get('/api/officials', async (c) => {
     await OfficialEntity.ensureSeed(c.env);
     return ok(c, await OfficialEntity.list(c.env));
@@ -88,19 +108,18 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const body = await c.req.json();
     const list = await AppointmentEntity.list(c.env);
     const queueNumber = (list.items.length || 0) + 1;
-    const item = await AppointmentEntity.create(c.env, { 
-      ...body, 
-      id: crypto.randomUUID(), 
+    const item = await AppointmentEntity.create(c.env, {
+      ...body,
+      id: crypto.randomUUID(),
       status: 'pending',
       queueNumber,
       estimatedWaitTime: '15-30 mins'
     });
     return ok(c, item);
   });
-  // AUTH (Updated with multiple roles)
+  // AUTH
   app.post('/api/auth/login', async (c) => {
     const { username, password } = await c.req.json();
-    // Demo Mocks
     if (username === 'admin' && password === 'admin123') {
       return ok(c, { user: { id: 'admin-1', name: 'Barangay Admin', role: 'superAdmin' as UserRole } });
     }

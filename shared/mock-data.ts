@@ -1,10 +1,10 @@
-import type { 
-  User, Chat, ChatMessage, DirectoryItem, Official, Announcement, 
-  Resident, Appointment, SkilledWorker, JobPosting 
+import type {
+  User, Chat, ChatMessage, DirectoryItem, Official, Announcement,
+  Resident, Appointment, SkilledWorker, JobPosting
 } from './types';
 export const MOCK_USERS: User[] = [
-  { id: 'u1', name: 'Juan Dela Cruz' },
-  { id: 'u2', name: 'Maria Santos' }
+  { id: 'u1', name: 'Juan Dela Cruz', role: 'resident' },
+  { id: 'u2', name: 'Maria Santos', role: 'staff' }
 ];
 export const MOCK_CHATS: Chat[] = [
   { id: 'c1', title: 'Barangay Feedback' },
@@ -49,11 +49,10 @@ export const MOCK_ANNOUNCEMENTS: Announcement[] = [
     category: 'Event'
   }
 ];
-// Phase 4 Mock Data
 export const MOCK_RESIDENTS: Resident[] = [
-  { id: 'res-1', name: 'Juan Dela Cruz', address: 'Purok 1', registrationDate: '2022-01-10', residencyStatus: true },
-  { id: 'res-2', name: 'Maria Clara', address: 'Purok 2', registrationDate: '2023-11-01', residencyStatus: false },
-  { id: 'res-3', name: 'Pedro Penduko', address: 'Purok 4', registrationDate: '2021-05-20', residencyStatus: true }
+  { id: 'res-1', name: 'Juan Dela Cruz', address: 'Purok 1', registrationDate: '2022-01-10', residencyStatus: true, verificationStatus: 'verified' },
+  { id: 'res-2', name: 'Maria Clara', address: 'Purok 2', registrationDate: '2023-11-01', residencyStatus: false, verificationStatus: 'pending' },
+  { id: 'res-3', name: 'Pedro Penduko', address: 'Purok 4', registrationDate: '2021-05-20', residencyStatus: true, verificationStatus: 'verified' }
 ];
 export const MOCK_APPOINTMENTS: Appointment[] = [
   { id: 'app-1', residentId: 'res-1', residentName: 'Juan Dela Cruz', documentType: 'Clearance', scheduledDate: '2023-12-01', status: 'confirmed' },
