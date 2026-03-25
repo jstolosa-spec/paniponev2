@@ -5,15 +5,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { MOCK_ANNOUNCEMENTS } from '@shared/mock-data';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/lib/api-client';
+import { cn } from '@/lib/utils';
+import type { Announcement } from '@shared/types';
 export function HomePage() {
+  const { data: announcements, isLoading } = useQuery({
+    queryKey: ['announcements'],
+    queryFn: () => api<{ items: Announcement[] }>('/api/announcements'),
+  });
   return (
     <div className="flex flex-col w-full">
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-hero py-20 lg:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
@@ -37,15 +44,15 @@ export function HomePage() {
                 </Button>
               </div>
             </motion.div>
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.2 }}
               className="relative hidden lg:block"
             >
               <div className="aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border-8 border-white dark:border-slate-900">
-                <img 
-                  src="https://images.unsplash.com/photo-1542332213-9b5a5a3fad35?auto=format&fit=crop&q=80&w=1200" 
+                <img
+                  src="https://images.unsplash.com/photo-1542332213-9b5a5a3fad35?auto=format&fit=crop&q=80&w=1200"
                   alt="Barangay Landscape"
                   className="w-full h-full object-cover"
                 />
@@ -121,28 +128,34 @@ export function HomePage() {
             <Button variant="ghost" className="hidden sm:flex text-sky-600 hover:text-sky-700">View All Updates</Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {MOCK_ANNOUNCEMENTS.map((item) => (
-              <Card key={item.id} className="overflow-hidden hover:shadow-md transition-shadow">
-                <div className="flex">
-                  <div className={cn(
-                    "w-2 shrink-0",
-                    item.category === 'Alert' ? "bg-rose-500" : "bg-sky-500"
-                  )} />
-                  <CardHeader className="flex-1">
-                    <div className="flex justify-between items-start mb-2">
-                      <Badge variant="secondary" className="text-[10px] uppercase font-bold tracking-wider">
-                        {item.category}
-                      </Badge>
-                      <span className="text-xs text-muted-foreground">{item.date}</span>
-                    </div>
-                    <CardTitle className="text-xl mb-2">{item.title}</CardTitle>
-                    <CardDescription className="line-clamp-2 leading-relaxed">
-                      {item.content}
-                    </CardDescription>
-                  </CardHeader>
-                </div>
-              </Card>
-            ))}
+            {isLoading ? (
+              [1, 2].map((i) => (
+                <Card key={i} className="h-32 animate-pulse bg-slate-200 dark:bg-slate-800" />
+              ))
+            ) : (
+              announcements?.items.slice(0, 4).map((item) => (
+                <Card key={item.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                  <div className="flex">
+                    <div className={cn(
+                      "w-2 shrink-0",
+                      item.category === 'Alert' ? "bg-rose-500" : "bg-sky-500"
+                    )} />
+                    <CardHeader className="flex-1">
+                      <div className="flex justify-between items-start mb-2">
+                        <Badge variant="secondary" className="text-[10px] uppercase font-bold tracking-wider">
+                          {item.category}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">{item.date}</span>
+                      </div>
+                      <CardTitle className="text-xl mb-2">{item.title}</CardTitle>
+                      <CardDescription className="line-clamp-2 leading-relaxed">
+                        {item.content}
+                      </CardDescription>
+                    </CardHeader>
+                  </div>
+                </Card>
+              ))
+            )}
           </div>
         </div>
       </section>

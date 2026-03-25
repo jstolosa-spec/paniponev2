@@ -15,7 +15,15 @@ import { RootLayout } from '@/components/layout/RootLayout';
 import { HomePage } from '@/pages/HomePage';
 import { DirectoryPage } from '@/pages/DirectoryPage';
 import { OfficialsPage } from '@/pages/OfficialsPage';
-const queryClient = new QueryClient();
+import { EmergencyPage } from '@/pages/EmergencyPage';
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 const router = createBrowserRouter([
   {
     path: "/",
@@ -33,6 +41,10 @@ const router = createBrowserRouter([
       {
         path: "officials",
         element: <OfficialsPage />,
+      },
+      {
+        path: "emergency",
+        element: <EmergencyPage />,
       },
     ]
   },
