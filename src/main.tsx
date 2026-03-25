@@ -18,6 +18,7 @@ import { OfficialsPage } from '@/pages/OfficialsPage';
 import { EmergencyPage } from '@/pages/EmergencyPage';
 import { LoginPage } from '@/pages/Admin/LoginPage';
 import { AdminDashboard } from '@/pages/Admin/AdminDashboard';
+import { AppointmentsPage } from '@/pages/AppointmentsPage';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -39,6 +40,10 @@ const router = createBrowserRouter([
       {
         path: "directory",
         element: <DirectoryPage />,
+      },
+      {
+        path: "appointments",
+        element: <AppointmentsPage />,
       },
       {
         path: "officials",

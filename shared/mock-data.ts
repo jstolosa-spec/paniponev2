@@ -1,4 +1,7 @@
-import type { User, Chat, ChatMessage, DirectoryItem, Official, Announcement } from './types';
+import type { 
+  User, Chat, ChatMessage, DirectoryItem, Official, Announcement, 
+  Resident, Appointment, SkilledWorker, JobPosting 
+} from './types';
 export const MOCK_USERS: User[] = [
   { id: 'u1', name: 'Juan Dela Cruz' },
   { id: 'u2', name: 'Maria Santos' }
@@ -27,15 +30,6 @@ export const MOCK_DIRECTORY: DirectoryItem[] = [
     phone: '0912-345-6789',
     image: 'https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&q=80&w=800',
     description: 'Your neighborhood stop for daily essentials.'
-  },
-  {
-    id: 'd3',
-    name: 'Panipuan Bakery',
-    category: 'Food',
-    address: 'Purok 1, Brgy. Panipuan',
-    phone: '0998-765-4321',
-    image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&q=80&w=800',
-    description: 'Freshly baked pandesal every morning.'
   }
 ];
 export const MOCK_OFFICIALS: Official[] = [
@@ -44,18 +38,6 @@ export const MOCK_OFFICIALS: Official[] = [
     name: 'Hon. Ricardo P. Santos',
     position: 'Punong Barangay',
     image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=400'
-  },
-  {
-    id: 'o2',
-    name: 'Hon. Elena M. Garcia',
-    position: 'Barangay Kagawad',
-    image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400'
-  },
-  {
-    id: 'o3',
-    name: 'Hon. Manuel L. Quezon III',
-    position: 'Barangay Kagawad',
-    image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=400'
   }
 ];
 export const MOCK_ANNOUNCEMENTS: Announcement[] = [
@@ -63,14 +45,24 @@ export const MOCK_ANNOUNCEMENTS: Announcement[] = [
     id: 'a1',
     title: 'Upcoming Clean-up Drive',
     date: '2023-11-25',
-    content: 'Join us this Saturday for our monthly community clean-up drive. Meet at the Barangay Hall at 6:00 AM.',
+    content: 'Join us this Saturday for our monthly community clean-up drive.',
     category: 'Event'
-  },
-  {
-    id: 'a2',
-    title: 'Water Service Interruption',
-    date: '2023-11-20',
-    content: 'Please be advised that there will be a temporary water interruption on Nov 22 from 1PM to 5PM for maintenance.',
-    category: 'Alert'
   }
+];
+// Phase 4 Mock Data
+export const MOCK_RESIDENTS: Resident[] = [
+  { id: 'res-1', name: 'Juan Dela Cruz', address: 'Purok 1', registrationDate: '2022-01-10', residencyStatus: true },
+  { id: 'res-2', name: 'Maria Clara', address: 'Purok 2', registrationDate: '2023-11-01', residencyStatus: false },
+  { id: 'res-3', name: 'Pedro Penduko', address: 'Purok 4', registrationDate: '2021-05-20', residencyStatus: true }
+];
+export const MOCK_APPOINTMENTS: Appointment[] = [
+  { id: 'app-1', residentId: 'res-1', residentName: 'Juan Dela Cruz', documentType: 'Clearance', scheduledDate: '2023-12-01', status: 'confirmed' },
+  { id: 'app-2', residentId: 'res-2', residentName: 'Maria Clara', documentType: 'Indigency', scheduledDate: '2023-12-05', status: 'pending' }
+];
+export const MOCK_SKILLS_REGISTRY: SkilledWorker[] = [
+  { id: 'sk-1', name: 'Mario Rossi', skill: 'Plumber', contact: '0912-111-2222', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200', isVerified: true },
+  { id: 'sk-2', name: 'Luigi Verdi', skill: 'Electrician', contact: '0912-333-4444', image: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&q=80&w=200', isVerified: false }
+];
+export const MOCK_JOB_POSTINGS: JobPosting[] = [
+  { id: 'job-1', businessName: 'Panipuan Bakery', title: 'Part-time Driver', description: 'Looking for a delivery driver for morning shifts.', skillsRequired: ['Driver'], deadline: '2023-12-30' }
 ];

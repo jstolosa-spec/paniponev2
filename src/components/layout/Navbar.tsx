@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const NAV_LINKS = [
   { label: 'Home', href: '/' },
   { label: 'Directory', href: '/directory' },
+  { label: 'Services', href: '/appointments' },
   { label: 'Officials', href: '/officials' },
 ];
 export function Navbar() {
@@ -35,8 +36,8 @@ export function Navbar() {
                   to={link.href}
                   className={cn(
                     "text-sm font-medium transition-colors hover:text-sky-500",
-                    location.pathname === link.href 
-                      ? "text-sky-600 dark:text-sky-400" 
+                    location.pathname === link.href
+                      ? "text-sky-600 dark:text-sky-400 font-semibold"
                       : "text-slate-600 dark:text-slate-400"
                   )}
                 >
@@ -56,10 +57,7 @@ export function Navbar() {
           </div>
           <div className="flex md:hidden items-center gap-2">
             <ThemeToggle className="relative top-0 right-0" />
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="p-2 text-slate-600 dark:text-slate-400"
-            >
+            <button onClick={() => setIsOpen(!isOpen)} className="p-2 text-slate-600 dark:text-slate-400">
               {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
@@ -80,8 +78,8 @@ export function Navbar() {
                 onClick={() => setIsOpen(false)}
                 className={cn(
                   "block px-3 py-2 rounded-md text-base font-medium",
-                  location.pathname === link.href 
-                    ? "bg-sky-50 text-sky-600 dark:bg-sky-900/20 dark:text-sky-400" 
+                  location.pathname === link.href
+                    ? "bg-sky-50 text-sky-600 dark:bg-sky-900/20 dark:text-sky-400"
                     : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900"
                 )}
               >
@@ -89,10 +87,7 @@ export function Navbar() {
               </Link>
             ))}
             <Button variant="destructive" className="w-full mt-4 gap-2" asChild>
-              <a href="tel:911">
-                <PhoneCall className="h-4 w-4" />
-                Emergency Call
-              </a>
+              <a href="tel:911"><PhoneCall className="h-4 w-4" /> Emergency Call</a>
             </Button>
           </motion.div>
         )}

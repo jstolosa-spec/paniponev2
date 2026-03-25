@@ -1,6 +1,12 @@
 import { IndexedEntity } from "./core-utils";
-import type { User, Chat, ChatMessage, DirectoryItem, Official, Announcement } from "@shared/types";
-import { MOCK_CHAT_MESSAGES, MOCK_CHATS, MOCK_USERS, MOCK_DIRECTORY, MOCK_OFFICIALS, MOCK_ANNOUNCEMENTS } from "@shared/mock-data";
+import type { 
+  User, Chat, ChatMessage, DirectoryItem, Official, Announcement,
+  Resident, Appointment, SkilledWorker, JobPosting
+} from "@shared/types";
+import { 
+  MOCK_CHAT_MESSAGES, MOCK_CHATS, MOCK_USERS, MOCK_DIRECTORY, MOCK_OFFICIALS, MOCK_ANNOUNCEMENTS,
+  MOCK_RESIDENTS, MOCK_APPOINTMENTS, MOCK_SKILLS_REGISTRY, MOCK_JOB_POSTINGS
+} from "@shared/mock-data";
 export class UserEntity extends IndexedEntity<User> {
   static readonly entityName = "user";
   static readonly indexName = "users";
@@ -25,23 +31,35 @@ export class AnnouncementEntity extends IndexedEntity<Announcement> {
   static readonly initialState: Announcement = { id: "", title: "", date: "", content: "", category: 'News' };
   static seedData = MOCK_ANNOUNCEMENTS;
 }
+// Phase 4 New Entities
+export class ResidentEntity extends IndexedEntity<Resident> {
+  static readonly entityName = "resident";
+  static readonly indexName = "residents";
+  static readonly initialState: Resident = { id: "", name: "", address: "", registrationDate: "", residencyStatus: false };
+  static seedData = MOCK_RESIDENTS;
+}
+export class AppointmentEntity extends IndexedEntity<Appointment> {
+  static readonly entityName = "appointment";
+  static readonly indexName = "appointments";
+  static readonly initialState: Appointment = { id: "", residentId: "", residentName: "", documentType: 'Clearance', scheduledDate: "", status: 'pending' };
+  static seedData = MOCK_APPOINTMENTS;
+}
+export class SkilledWorkerEntity extends IndexedEntity<SkilledWorker> {
+  static readonly entityName = "skilled_worker";
+  static readonly indexName = "skilled_workers";
+  static readonly initialState: SkilledWorker = { id: "", name: "", skill: 'Plumber', contact: "", image: "", isVerified: false };
+  static seedData = MOCK_SKILLS_REGISTRY;
+}
+export class JobPostingEntity extends IndexedEntity<JobPosting> {
+  static readonly entityName = "job_posting";
+  static readonly indexName = "job_postings";
+  static readonly initialState: JobPosting = { id: "", businessName: "", title: "", description: "", skillsRequired: [], deadline: "" };
+  static seedData = MOCK_JOB_POSTINGS;
+}
 export type ChatBoardState = Chat & { messages: ChatMessage[] };
-const SEED_CHAT_BOARDS: ChatBoardState[] = MOCK_CHATS.map(c => ({
-  ...c,
-  messages: MOCK_CHAT_MESSAGES.filter(m => m.chatId === c.id),
-}));
 export class ChatBoardEntity extends IndexedEntity<ChatBoardState> {
   static readonly entityName = "chat";
   static readonly indexName = "chats";
   static readonly initialState: ChatBoardState = { id: "", title: "", messages: [] };
-  static seedData = SEED_CHAT_BOARDS;
-  async listMessages(): Promise<ChatMessage[]> {
-    const { messages } = await this.getState();
-    return messages;
-  }
-  async sendMessage(userId: string, text: string): Promise<ChatMessage> {
-    const msg: ChatMessage = { id: crypto.randomUUID(), chatId: this.id, userId, text, ts: Date.now() };
-    await this.mutate(s => ({ ...s, messages: [...s.messages, msg] }));
-    return msg;
-  }
+  static seedData = MOCK_CHATS.map(c => ({ ...c, messages: MOCK_CHAT_MESSAGES.filter(m => m.chatId === c.id) }));
 }

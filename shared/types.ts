@@ -41,3 +41,38 @@ export interface Announcement {
   content: string;
   category: 'News' | 'Alert' | 'Event';
 }
+// Phase 4 New Types
+export type DocumentType = 'Clearance' | 'Indigency' | 'Permits';
+export type AppointmentStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
+export type SkillType = 'Plumber' | 'Carpenter' | 'Electrician' | 'Mason' | 'Driver' | 'Cleaner';
+export interface Resident {
+  id: string;
+  name: string;
+  address: string;
+  registrationDate: string; // ISO format
+  residencyStatus: boolean; // Auto-calculated logic: > 6 months
+}
+export interface Appointment {
+  id: string;
+  residentId: string;
+  residentName: string;
+  documentType: DocumentType;
+  scheduledDate: string;
+  status: AppointmentStatus;
+}
+export interface SkilledWorker {
+  id: string;
+  name: string;
+  skill: SkillType;
+  contact: string;
+  image: string;
+  isVerified: boolean;
+}
+export interface JobPosting {
+  id: string;
+  businessName: string;
+  title: string;
+  description: string;
+  skillsRequired: SkillType[];
+  deadline: string;
+}
