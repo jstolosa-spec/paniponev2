@@ -1,63 +1,39 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Landmark, Loader2, Lock, Info } from 'lucide-react';
+import { Landmark, Loader2, Lock, Info, Cloud } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAuthStore } from '@/store/auth-store';
-import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import type { UserRole } from '@shared/types';
-interface LoginUserResponse {
-  user: {
-    id: string;
-    name: string;
-    role: UserRole;
-    residentId?: string;
-  }
-}
 export function LoginPage() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  // Strict primitive selector
   const login = useAuthStore((s) => s.login);
   const navigate = useNavigate();
   const handleLogin = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setIsLoading(true);
     try {
-      const response = await api<LoginUserResponse>('/api/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ username, password }),
-      });
-      login(response.user);
-      toast.success(`Welcome back, ${response.user.name}`);
+      await login(email, password);
+      toast.success(`Welcome to PanipuanConnect`);
       navigate('/admin');
-    } catch (error) {
-      toast.error('Invalid credentials. Please try again.');
+    } catch (error: any) {
+      toast.error(error.message || 'Authentication failed');
     } finally {
       setIsLoading(false);
     }
   };
-  const autoFillDemo = (u: string, p: string) => {
-    setUsername(u);
+  const autoFillDemo = (e: string, p: string) => {
+    setEmail(e);
     setPassword(p);
-    toast.info('Credentials filled. Redirecting...', { duration: 1000 });
-    setTimeout(() => {
-       api<LoginUserResponse>('/api/auth/login', {
-          method: 'POST',
-          body: JSON.stringify({ username: u, password: p }),
-        }).then(res => {
-          login(res.user);
-          navigate('/admin');
-        });
-    }, 800);
+    toast.info('Credentials filled. Click Sign In.');
   };
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 flex justify-center items-center min-h-[80vh]">
@@ -73,19 +49,22 @@ export function LoginPage() {
               <Landmark className="h-10 w-10 text-primary" />
             </div>
             <div>
-              <CardTitle className="text-3xl font-bold text-card-foreground">Panipuan Auth</CardTitle>
-              <CardDescription>Barangay Governance System Access</CardDescription>
+              <CardTitle className="text-3xl font-bold text-card-foreground">Sign In</CardTitle>
+              <CardDescription className="flex items-center justify-center gap-1.5">
+                <Cloud className="h-3.5 w-3.5" /> Firebase Secure Authentication
+              </CardDescription>
             </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="email">Email Address</Label>
                 <Input
-                  id="username"
-                  placeholder="admin, secretary, staff, or resident"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  id="email"
+                  type="email"
+                  placeholder="admin@panipuan.gov.ph"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="bg-secondary text-secondary-foreground border-input"
                   required
                 />
@@ -104,7 +83,7 @@ export function LoginPage() {
               <div className="flex items-center space-x-2">
                 <Checkbox id="remember" checked={rememberMe} onCheckedChange={(v) => setRememberMe(!!v)} />
                 <label htmlFor="remember" className="text-sm font-medium leading-none cursor-pointer text-foreground">
-                  Remember me on this device
+                  Keep me signed in
                 </label>
               </div>
               <Button
@@ -115,7 +94,7 @@ export function LoginPage() {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Authenticating...
+                    Connecting...
                   </>
                 ) : (
                   <>
@@ -130,23 +109,17 @@ export function LoginPage() {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="flex items-center justify-center gap-2 text-xs text-primary font-bold cursor-help uppercase tracking-widest bg-accent py-2 rounded-lg hover:bg-accent/80 transition-colors">
-                      <Info className="h-3 w-3" /> Click for Demo Credentials
+                      <Info className="h-3 w-3" /> Demo Accounts
                     </div>
                   </TooltipTrigger>
                   <TooltipContent className="bg-popover text-popover-foreground border border-border p-4 space-y-4 max-w-xs" side="bottom">
-                    <p className="text-xs font-bold uppercase text-muted-foreground">Click a role to auto-fill</p>
+                    <p className="text-xs font-bold uppercase text-muted-foreground">Migration Environment</p>
                     <div className="space-y-2">
-                      <button onClick={() => autoFillDemo('admin', 'admin123')} className="w-full text-left p-2 hover:bg-accent rounded transition-colors text-sm">
-                        <span className="font-bold text-primary">Admin:</span> admin / admin123
+                      <button onClick={() => autoFillDemo('admin@panipuan.gov.ph', 'admin123')} className="w-full text-left p-2 hover:bg-accent rounded transition-colors text-sm">
+                        <span className="font-bold text-primary">Admin:</span> admin@panipuan.gov.ph / admin123
                       </button>
-                      <button onClick={() => autoFillDemo('secretary', 'sec123')} className="w-full text-left p-2 hover:bg-accent rounded transition-colors text-sm">
-                        <span className="font-bold text-emerald-500">Secretary:</span> secretary / sec123
-                      </button>
-                      <button onClick={() => autoFillDemo('staff', 'staff123')} className="w-full text-left p-2 hover:bg-accent rounded transition-colors text-sm">
-                        <span className="font-bold text-amber-500">Staff:</span> staff / staff123
-                      </button>
-                      <button onClick={() => autoFillDemo('resident', 'res123')} className="w-full text-left p-2 hover:bg-accent rounded transition-colors text-sm">
-                        <span className="font-bold text-muted-foreground">Resident:</span> resident / res123
+                      <button onClick={() => autoFillDemo('resident@panipuan.gov.ph', 'res123')} className="w-full text-left p-2 hover:bg-accent rounded transition-colors text-sm">
+                        <span className="font-bold text-muted-foreground">Resident:</span> resident@panipuan.gov.ph / res123
                       </button>
                     </div>
                   </TooltipContent>
