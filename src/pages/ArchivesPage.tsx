@@ -31,7 +31,7 @@ export default function ArchivesPage() {
       <div className="py-8 md:py-10 lg:py-12">
         <div className="mb-12 space-y-4">
           <Badge variant="outline" className="px-4 py-1 text-sky-600 border-sky-200 bg-sky-50/50">
-            Digital Repository
+            PanipOne Digital Repository
           </Badge>
           <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white">Public Archives</h1>
           <p className="text-lg text-muted-foreground max-w-2xl">
@@ -63,8 +63,8 @@ export default function ArchivesPage() {
                       variant="ghost"
                       className={cn(
                         "w-full justify-start font-medium transition-all",
-                        activeFilter === opt.value 
-                          ? "bg-sky-50 text-sky-600 dark:bg-sky-900/20 dark:text-sky-400 font-bold" 
+                        activeFilter === opt.value
+                          ? "bg-sky-50 text-sky-600 dark:bg-sky-900/20 dark:text-sky-400 font-bold"
                           : "hover:bg-slate-50 dark:hover:bg-slate-900"
                       )}
                       onClick={() => setActiveFilter(opt.value)}
@@ -74,11 +74,6 @@ export default function ArchivesPage() {
                   ))}
                 </CardContent>
               </Card>
-              <div className="p-4 bg-sky-50 dark:bg-sky-900/10 rounded-2xl border border-sky-100 dark:border-sky-900/30">
-                <p className="text-xs text-sky-700 dark:text-sky-300 leading-relaxed italic">
-                  Cannot find a specific record? Visit the Barangay Hall Records Section for historical physical copies.
-                </p>
-              </div>
             </div>
           </div>
           <div className="md:col-span-3 space-y-6">

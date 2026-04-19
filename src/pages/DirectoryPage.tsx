@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Phone, MapPin, ExternalLink, Briefcase, Wrench, ShieldCheck, Star } from 'lucide-react';
+import { Search, Phone, MapPin, Briefcase, ShieldCheck } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,8 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import { cn } from '@/lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
 import type { DirectoryItem, SkilledWorker, JobPosting } from '@shared/types';
 export function DirectoryPage() {
   const [search, setSearch] = useState('');
@@ -21,17 +19,17 @@ export function DirectoryPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="mb-12 space-y-4">
-        <h1 className="text-4xl font-bold tracking-tight">Community Directory</h1>
+        <h1 className="text-4xl font-bold tracking-tight">PanipOne Community Directory</h1>
         <p className="text-lg text-muted-foreground max-w-2xl">
-          Connecting Panipuan residents with businesses, skilled workers, and career opportunities.
+          Connecting Panipuan residents with verified local businesses, skilled professionals, and growth opportunities.
         </p>
       </div>
       <div className="sticky top-[4.5rem] z-30 bg-background/95 backdrop-blur-sm py-4 mb-8">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input 
-            placeholder="Search directory..." 
-            className="pl-10 h-12 text-lg shadow-sm" 
+          <Input
+            placeholder="Search PanipOne registry..."
+            className="pl-10 h-12 text-lg shadow-sm"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />

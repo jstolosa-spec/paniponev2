@@ -9,7 +9,7 @@ export function Footer() {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Landmark className="h-6 w-6 text-sky-500" />
-              <span className="text-xl font-bold">PanipuanConnect</span>
+              <span className="text-xl font-bold">PanipOne</span>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
               The official digital portal for Barangay Panipuan. Empowering residents with information and accessibility.

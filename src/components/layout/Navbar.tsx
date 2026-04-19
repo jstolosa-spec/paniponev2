@@ -13,7 +13,8 @@ export function Navbar() {
   const location = useLocation();
   // Strict primitive selectors for Zustand v5
   const isAuthenticated = useAuthStore(s => s.isAuthenticated);
-  const userRole = useAuthStore(s => s.user?.role) as UserRole | undefined;
+  const user = useAuthStore(s => s.user);
+  const userRole = user?.role as UserRole | undefined;
   const getNavLinks = () => {
     const base = [
       { label: 'Home', href: '/' },
@@ -44,7 +45,7 @@ export function Navbar() {
                 <Landmark className="h-6 w-6 text-primary-foreground" />
               </div>
               <span className="text-xl font-bold tracking-tight text-foreground">
-                Panipuan<span className="text-primary">Connect</span>
+                Panip<span className="text-primary">One</span>
               </span>
             </Link>
           </div>

@@ -29,13 +29,13 @@ export function HomePage() {
               className="space-y-8"
             >
               <Badge variant="outline" className="px-4 py-1 text-sky-600 border-sky-200 bg-sky-50/50">
-                Official Community Portal
+                Official PanipOne Portal
               </Badge>
               <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.1]">
                 Serving the People of <span className="text-sky-500">Panipuan</span>
               </h1>
               <p className="text-xl text-slate-600 dark:text-slate-400 max-w-lg leading-relaxed">
-                Access local services, stay updated with community news, and connect with your barangay leadership all in one place.
+                Welcome to PanipOne. Access local services, stay updated with community news, and connect with your barangay leadership all in one place.
               </p>
               <div className="flex flex-wrap gap-4">
                 <Button size="lg" className="bg-sky-500 hover:bg-sky-600 text-white rounded-full px-8" asChild>
@@ -86,8 +86,8 @@ export function HomePage() {
               ))
             ) : (
               announcements?.items.slice(0, 4).map((item) => (
-                <Card 
-                  key={item.id} 
+                <Card
+                  key={item.id}
                   className="overflow-hidden hover:shadow-md transition-all cursor-pointer group"
                   onClick={() => setSelectedAnnouncement(item)}
                 >
@@ -118,7 +118,7 @@ export function HomePage() {
           </div>
         </div>
       </section>
-      {/* Feature Grids (Omitted inner content for brevity, same as previous Phase 4) */}
+      {/* Feature Grids */}
       <section className="py-20 bg-white dark:bg-slate-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

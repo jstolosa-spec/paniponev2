@@ -38,7 +38,7 @@ const EMERGENCY_CONTACTS = [
     color: 'bg-amber-100 text-amber-600',
     contacts: [
       { name: 'PELCO II (Electricity)', phone: '(045) 961-3456', desc: 'Power Interruptions' },
-      { name: 'City Water District', phone: '(045) 961-4567', desc: 'Water Leakage/Service' },
+      { name: 'City Water District', phone: '(045) 961-4567', desc: 'Water Service' },
     ]
   }
 ];
@@ -46,12 +46,12 @@ export function EmergencyPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
       <div className="mb-12 text-center space-y-4">
-        <Badge variant="destructive" className="px-4 py-1 animate-pulse">24/7 Hotlines</Badge>
+        <Badge variant="destructive" className="px-4 py-1 animate-pulse">PanipOne 24/7 Hotlines</Badge>
         <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white">
           Emergency Portal
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Immediate help is just a call away. Keep these numbers saved for any emergency situation within Barangay Panipuan.
+          Immediate help is just a call away. PanipOne ensures critical lifelines are accessible for every resident of Barangay Panipuan.
         </p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
@@ -60,7 +60,7 @@ export function EmergencyPage() {
             <div className="bg-white/20 p-3 rounded-full"><Phone className="h-8 w-8" /></div>
             <div>
               <CardTitle className="text-3xl font-black">911</CardTitle>
-              <CardDescription className="text-rose-100 font-medium uppercase tracking-wider">National Emergency Hotline</CardDescription>
+              <CardDescription className="text-rose-100 font-medium uppercase tracking-wider">National Hotline</CardDescription>
             </div>
           </CardHeader>
           <CardContent>

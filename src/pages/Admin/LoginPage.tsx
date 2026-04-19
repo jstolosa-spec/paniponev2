@@ -22,7 +22,7 @@ export function LoginPage() {
     setIsLoading(true);
     try {
       await login(email, password);
-      toast.success(`Welcome to PanipuanConnect`);
+      toast.success(`Welcome to PanipOne`);
       navigate('/admin');
     } catch (error: any) {
       toast.error(error.message || 'Authentication failed');
@@ -49,7 +49,7 @@ export function LoginPage() {
               <Landmark className="h-10 w-10 text-primary" />
             </div>
             <div>
-              <CardTitle className="text-3xl font-bold text-card-foreground">Sign In</CardTitle>
+              <CardTitle className="text-3xl font-bold text-card-foreground">PanipOne Sign In</CardTitle>
               <CardDescription className="flex items-center justify-center gap-1.5">
                 <Cloud className="h-3.5 w-3.5" /> Firebase Secure Authentication
               </CardDescription>
@@ -113,7 +113,7 @@ export function LoginPage() {
                     </div>
                   </TooltipTrigger>
                   <TooltipContent className="bg-popover text-popover-foreground border border-border p-4 space-y-4 max-w-xs" side="bottom">
-                    <p className="text-xs font-bold uppercase text-muted-foreground">Migration Environment</p>
+                    <p className="text-xs font-bold uppercase text-muted-foreground">PanipOne Environment</p>
                     <div className="space-y-2">
                       <button onClick={() => autoFillDemo('admin@panipuan.gov.ph', 'admin123')} className="w-full text-left p-2 hover:bg-accent rounded transition-colors text-sm">
                         <span className="font-bold text-primary">Admin:</span> admin@panipuan.gov.ph / admin123

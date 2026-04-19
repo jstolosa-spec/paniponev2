@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { 
-  signInWithEmailAndPassword, 
-  signOut, 
+import {
+  signInWithEmailAndPassword,
+  signOut,
   onAuthStateChanged,
-  User as FirebaseUser 
+  User as FirebaseUser
 } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
@@ -34,15 +34,14 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isInitializing: true,
       user: null,
-      setAuth: (user) => set({ 
-        user, 
+      setAuth: (user) => set({
+        user,
         isAuthenticated: !!user,
-        isInitializing: false 
+        isInitializing: false
       }),
       setInitializing: (val) => set({ isInitializing: val }),
       login: async (email, pass) => {
-        const cred = await signInWithEmailAndPassword(auth, email, pass);
-        // Metadata is handled by the onAuthStateChanged listener
+        await signInWithEmailAndPassword(auth, email, pass);
       },
       logout: async () => {
         await signOut(auth);
@@ -60,7 +59,7 @@ export const useAuthStore = create<AuthState>()(
       },
     }),
     {
-      name: 'panipuan-auth-storage',
+      name: 'panipone-auth-storage',
       partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),
     }
   )
@@ -70,7 +69,6 @@ onAuthStateChanged(auth, async (fbUser: FirebaseUser | null) => {
   const store = useAuthStore.getState();
   if (fbUser) {
     try {
-      // Fetch role and extra data from Firestore 'users' collection
       const userDoc = await getDoc(doc(db, 'users', fbUser.uid));
       const data = userDoc.data();
       store.setAuth({

@@ -25,7 +25,7 @@ export function AppointmentsPage() {
     mutationFn: (data: Partial<Appointment>) => api('/api/appointments', { method: 'POST', body: JSON.stringify(data) }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments'] });
-      toast.success('Appointment scheduled successfully');
+      toast.success('PanipOne Appointment scheduled successfully');
       setResidentName('');
       setSelectedDate(undefined);
     }
@@ -41,7 +41,7 @@ export function AppointmentsPage() {
       if (isNaN(regDate.getTime())) return false;
       return differenceInDays(new Date(), regDate) > 180;
     } catch (e) {
-      console.warn('Date parsing failed in isEligible calculation', e);
+      console.warn('Date parsing failed', e);
       return false;
     }
   }, [verifiedResident]);
@@ -50,7 +50,7 @@ export function AppointmentsPage() {
     if (!selectedDate || !residentName?.trim()) return toast.error('Please fill in all fields');
     const registryMatch = residents?.items?.find(r => r.name.toLowerCase() === residentName.trim().toLowerCase());
     if (!registryMatch) {
-      toast.error('Name not found in resident registry. Please contact barangay hall.');
+      toast.error('Resident not found. Please register on PanipOne first.');
       return;
     }
     createAppointment.mutate({
@@ -71,7 +71,7 @@ export function AppointmentsPage() {
                 <ShieldCheck className="h-5 w-5" />
                 Residency Tracker
               </CardTitle>
-              <CardDescription>Verify residency eligibility for certifications.</CardDescription>
+              <CardDescription>PanipOne verified residency lookup.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="relative">
@@ -85,11 +85,11 @@ export function AppointmentsPage() {
               </div>
               {searchQuery && (
                 <div className={cn(
-                  "p-4 rounded-xl border text-sm transition-colors", 
-                  verifiedResident && isEligible 
-                    ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600" 
-                    : verifiedResident 
-                    ? "bg-amber-500/10 border-amber-500/20 text-amber-600" 
+                  "p-4 rounded-xl border text-sm transition-colors",
+                  verifiedResident && isEligible
+                    ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600"
+                    : verifiedResident
+                    ? "bg-amber-500/10 border-amber-500/20 text-amber-600"
                     : "bg-destructive/10 border-destructive/20 text-destructive"
                 )}>
                   {verifiedResident ? (
@@ -101,14 +101,11 @@ export function AppointmentsPage() {
                          </Badge>
                       </div>
                       <p>Registered: {verifiedResident.registrationDate}</p>
-                      <p className="mt-2 text-xs opacity-80 leading-relaxed">
-                        {isEligible ? 'Full eligibility granted.' : 'Requires 6 months residency for full certification rights.'}
-                      </p>
                     </>
                   ) : (
                     <div className="flex items-center gap-2">
                       <AlertCircle className="h-4 w-4" />
-                      <p>Resident not found in registry.</p>
+                      <p>Resident not found in PanipOne registry.</p>
                     </div>
                   )}
                 </div>
@@ -120,13 +117,13 @@ export function AppointmentsPage() {
           <section>
             <div className="mb-6">
                <h2 className="text-3xl font-bold text-foreground">Schedule Document Pickup</h2>
-               <p className="text-muted-foreground">Select a date to claim your requested documents at the Barangay Hall.</p>
+               <p className="text-muted-foreground">Claim your requested certificates via PanipOne at the Barangay Hall.</p>
             </div>
             <Card className="shadow-lg border-none bg-card">
               <CardContent className="pt-6">
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Full Name (from registry)</label>
+                    <label className="text-sm font-medium text-foreground">Registry Name</label>
                     <Input value={residentName} onChange={(e) => setResidentName(e.target.value)} placeholder="e.g. Juan Dela Cruz" required />
                   </div>
                   <div className="space-y-2">
@@ -166,7 +163,7 @@ export function AppointmentsPage() {
             </Card>
           </section>
           <section>
-            <h3 className="text-xl font-bold mb-4 text-foreground">Ongoing Requests</h3>
+            <h3 className="text-xl font-bold mb-4 text-foreground">Current Requests</h3>
             <div className="space-y-3">
               {(!appointments?.items || appointments.items.length === 0) && <p className="text-sm text-muted-foreground italic">No current appointments found.</p>}
               {appointments?.items?.filter(a => a.status !== 'completed').map(app => (
@@ -181,7 +178,6 @@ export function AppointmentsPage() {
                     </div>
                   </div>
                   <Badge variant={app.status === 'confirmed' ? 'default' : 'secondary'} className="capitalize px-3">
-                    {app.status === 'confirmed' ? <CheckCircle2 className="h-3 w-3 mr-1" /> : <Clock className="h-3 w-3 mr-1" />}
                     {app.status}
                   </Badge>
                 </div>

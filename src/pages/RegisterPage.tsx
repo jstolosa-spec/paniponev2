@@ -33,17 +33,14 @@ export default function RegisterPage() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      // 1. Create Firebase Auth Account
       const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       const uid = userCredential.user.uid;
-      // 2. Create User Profile in Firestore
       await setDoc(doc(db, 'users', uid), {
         name: formData.name,
         email: formData.email,
-        role: role === 'resident' ? 'resident' : 'staff', // Simplified roles for migration
+        role: role === 'resident' ? 'resident' : 'staff',
         createdAt: new Date().toISOString()
       });
-      // 3. Create Role-Specific Data
       if (role === 'resident') {
         await setDoc(doc(db, 'residents', uid), {
           id: uid,
@@ -84,8 +81,8 @@ export default function RegisterPage() {
               className="w-full max-w-4xl"
             >
               <div className="text-center mb-12 space-y-4">
-                <h1 className="text-4xl font-extrabold tracking-tight">Join PanipuanConnect</h1>
-                <p className="text-xl text-muted-foreground">Access secure services via Firebase.</p>
+                <h1 className="text-4xl font-extrabold tracking-tight">Join PanipOne</h1>
+                <p className="text-xl text-muted-foreground">Access secure barangay services today.</p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <Card
@@ -97,7 +94,7 @@ export default function RegisterPage() {
                       <User className="h-12 w-12 text-sky-600" />
                     </div>
                     <CardTitle className="text-2xl">Resident</CardTitle>
-                    <CardDescription>Request documents and track residency.</CardDescription>
+                    <CardDescription>Request documents and track residency status.</CardDescription>
                   </CardHeader>
                 </Card>
                 <Card
@@ -109,7 +106,7 @@ export default function RegisterPage() {
                       <Wrench className="h-12 w-12 text-emerald-600" />
                     </div>
                     <CardTitle className="text-2xl">Skilled Worker</CardTitle>
-                    <CardDescription>Register in our professional database.</CardDescription>
+                    <CardDescription>Register in the PanipOne professional database.</CardDescription>
                   </CardHeader>
                 </Card>
               </div>
@@ -125,9 +122,9 @@ export default function RegisterPage() {
               <Card className="border-none shadow-2xl">
                 <div className={`h-2 ${role === 'resident' ? 'bg-sky-500' : 'bg-emerald-500'}`} />
                 <CardHeader>
-                  <CardTitle>Create Secure Account</CardTitle>
+                  <CardTitle>Create PanipOne Account</CardTitle>
                   <CardDescription className="flex items-center gap-1">
-                    <Cloud className="h-3 w-3" /> Managed by Google Cloud
+                    <Cloud className="h-3 w-3" /> Managed by Firebase Cloud
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -184,8 +181,8 @@ export default function RegisterPage() {
               <div className="bg-emerald-100 p-8 rounded-full w-fit mx-auto">
                 <CheckCircle2 className="h-20 w-20 text-emerald-600" />
               </div>
-              <h2 className="text-3xl font-bold">Account Ready!</h2>
-              <p className="text-muted-foreground">Verification pending by Barangay staff. You can now explore the portal.</p>
+              <h2 className="text-3xl font-bold">Welcome to PanipOne!</h2>
+              <p className="text-muted-foreground">Account verification is pending. You can now explore the portal while we review your details.</p>
               <Button size="lg" className="w-full bg-slate-900" asChild>
                 <a href="/">Go to Home</a>
               </Button>
