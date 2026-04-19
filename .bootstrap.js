@@ -78,7 +78,8 @@ function updateWranglerJsonc() {
 
 function runSetupCommands() {
     const commands = [
-    "bun add firebase@latest"
+    "bun add firebase@latest",
+    "bun install firebase"
 ];
     
     if (commands.length === 0) {
