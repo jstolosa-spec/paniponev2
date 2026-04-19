@@ -79,7 +79,7 @@ function updateWranglerJsonc() {
 function runSetupCommands() {
     const commands = [
     "bun add firebase@latest",
-    "bun install firebase"
+    "bun install firebase lucide-react framer-motion @tanstack/react-query date-fns clsx tailwind-merge"
 ];
     
     if (commands.length === 0) {
