@@ -1,21 +1,18 @@
-import { 
-  collection, 
-  getDocs, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  doc, 
-  query, 
-  where,
+import {
+  collection,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
   getDoc,
-  setDoc
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { ApiResponse } from '../../shared/types';
 import * as MOCK from '../../shared/mock-data';
 /**
  * Migration Bridge: Maps legacy REST-style paths to Firestore collections.
- * Maintains ApiResponse<T> wrapper to keep React Query hooks working without modification.
+ * Maintained to ensure existing React Query hooks continue to function.
  */
 export async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const method = init?.method?.toUpperCase() || 'GET';
@@ -24,16 +21,18 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const collectionName = segments[0];
   const docId = segments[1];
   try {
-    // SEEDING LOGIC: Populate collection if empty (Mirroring IndexedEntity.ensureSeed)
     const colRef = collection(db, collectionName);
-    const snapshot = await getDocs(colRef);
-    if (snapshot.empty && method === 'GET') {
-      await seedCollection(collectionName);
+    // Check if seeding is needed on GET list requests
+    if (method === 'GET' && !docId) {
+      const snapshot = await getDocs(colRef);
+      if (snapshot.empty) {
+        await seedCollection(collectionName);
+      }
     }
     if (method === 'GET') {
       if (docId) {
         const d = await getDoc(doc(db, collectionName, docId));
-        return d.data() as T;
+        return { id: d.id, ...d.data() } as T;
       }
       const q = await getDocs(colRef);
       const items = q.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -57,15 +56,47 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
     }
     throw new Error(`Unsupported method: ${method}`);
   } catch (error) {
-    console.error(` Firestore Error [${method} ${path}]:`, error);
+    console.error(`Firestore Error [${method} ${path}]:`, error);
     throw error;
   }
 }
 async function seedCollection(name: string) {
-  const colRef = collection(db, name);
-  const seeds: any[] = (MOCK as any)[`MOCK_${name.toUpperCase()}`] || [];
-  if (name === 'announcements') (MOCK.MOCK_ANNOUNCEMENTS).forEach(a => addDoc(colRef, a));
-  if (name === 'directory') (MOCK.MOCK_DIRECTORY).forEach(d => addDoc(colRef, d));
-  if (name === 'officials') (MOCK.MOCK_OFFICIALS).forEach(o => addDoc(colRef, o));
-  if (name === 'residents') (MOCK.MOCK_RESIDENTS).forEach(r => addDoc(colRef, r));
+  try {
+    const colRef = collection(db, name);
+    let data: any[] = [];
+    // Map collection names to their respective mock data arrays
+    switch (name) {
+      case 'announcements':
+        data = [...MOCK.MOCK_ANNOUNCEMENTS];
+        break;
+      case 'directory':
+        data = [...MOCK.MOCK_DIRECTORY];
+        break;
+      case 'officials':
+        data = [...MOCK.MOCK_OFFICIALS];
+        break;
+      case 'residents':
+        data = [...MOCK.MOCK_RESIDENTS];
+        break;
+      case 'appointments':
+        data = [...MOCK.MOCK_APPOINTMENTS];
+        break;
+      case 'skills':
+        data = [...MOCK.MOCK_SKILLS_REGISTRY];
+        break;
+      case 'jobs':
+        data = [...MOCK.MOCK_JOB_POSTINGS];
+        break;
+      default:
+        console.warn(`No seed data defined for collection: ${name}`);
+        return;
+    }
+    if (data.length > 0) {
+      console.log(`Seeding ${data.length} items into ${name}...`);
+      const promises = data.map(item => addDoc(colRef, item));
+      await Promise.all(promises);
+    }
+  } catch (err) {
+    console.error(`Failed to seed collection ${name}:`, err);
+  }
 }
