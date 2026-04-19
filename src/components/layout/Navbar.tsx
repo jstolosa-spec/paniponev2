@@ -7,14 +7,13 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '@/store/auth-store';
 import { Badge } from '@/components/ui/badge';
-import type { UserRole } from '@shared/types';
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   // Strict primitive selectors for Zustand v5
   const isAuthenticated = useAuthStore(s => s.isAuthenticated);
-  const user = useAuthStore(s => s.user);
-  const userRole = user?.role as UserRole | undefined;
+  const userRole = useAuthStore(s => s.user?.role);
+  const userName = useAuthStore(s => s.user?.name);
   const getNavLinks = () => {
     const base = [
       { label: 'Home', href: '/' },
@@ -23,11 +22,11 @@ export function Navbar() {
       { label: 'Directory', href: '/directory' },
     ];
     if (isAuthenticated) {
-      if (userRole && ['superAdmin', 'secretary', 'staff'].includes(userRole)) {
-        base.push({ label: 'Management', href: '/admin' });
-      } else {
-        base.push({ label: 'My Portal', href: '/admin' });
-      }
+      const isAdmin = userRole && ['superAdmin', 'secretary', 'staff'].includes(userRole);
+      base.push({ 
+        label: isAdmin ? 'Management' : 'My Portal', 
+        href: '/admin' 
+      });
     } else {
       base.push({ label: 'Register', href: '/register' });
       base.push({ label: 'Contact', href: '/contact' });

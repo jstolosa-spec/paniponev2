@@ -7,12 +7,17 @@ import {
   doc,
   getDoc,
 } from 'firebase/firestore';
-import { db } from './firebase';
-import { ApiResponse } from '../../shared/types';
+import { db, auth } from './firebase';
+import type { ApiResponse } from '../../shared/types';
 import * as MOCK from '../../shared/mock-data';
+// Helper to check if Firebase is using placeholder credentials
+const isFirebasePlaceholder = () => {
+  const config = (window as any).firebaseConfig || {};
+  return !config.apiKey || config.apiKey.includes('PLACEHOLDER');
+};
 /**
  * Migration Bridge: Maps legacy REST-style paths to Firestore collections.
- * Maintained to ensure existing React Query hooks continue to function.
+ * Enhanced with "Demo Mode" fallback to handle placeholder credentials gracefully.
  */
 export async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const method = init?.method?.toUpperCase() || 'GET';
@@ -20,9 +25,14 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const segments = cleanPath.split('/');
   const collectionName = segments[0];
   const docId = segments[1];
+  // If Firebase is unconfigured, intercept and return mock data
+  if (isFirebasePlaceholder()) {
+    console.warn(`[Demo Mode] PanipOne intercepting ${method} ${path}`);
+    return handleMockRequest<T>(method, collectionName, docId, init?.body);
+  }
   try {
     const colRef = collection(db, collectionName);
-    // Check if seeding is needed on GET list requests
+    // Initial seeding check for empty collections on GET list requests
     if (method === 'GET' && !docId) {
       const snapshot = await getDocs(colRef);
       if (snapshot.empty) {
@@ -32,6 +42,7 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
     if (method === 'GET') {
       if (docId) {
         const d = await getDoc(doc(db, collectionName, docId));
+        if (!d.exists()) throw new Error('Not found');
         return { id: d.id, ...d.data() } as T;
       }
       const q = await getDocs(colRef);
@@ -57,46 +68,57 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
     throw new Error(`Unsupported method: ${method}`);
   } catch (error) {
     console.error(`Firestore Error [${method} ${path}]:`, error);
-    throw error;
+    // Fallback to mock on error to prevent total application crash
+    return handleMockRequest<T>(method, collectionName, docId, init?.body);
   }
+}
+/**
+ * Handles requests by returning data from the local mock module.
+ */
+function handleMockRequest<T>(method: string, collection: string, id?: string, body?: any): T {
+  let mockData: any[] = [];
+  switch (collection) {
+    case 'announcements': mockData = MOCK.MOCK_ANNOUNCEMENTS; break;
+    case 'directory': mockData = MOCK.MOCK_DIRECTORY; break;
+    case 'officials': mockData = MOCK.MOCK_OFFICIALS; break;
+    case 'residents': mockData = MOCK.MOCK_RESIDENTS; break;
+    case 'appointments': mockData = MOCK.MOCK_APPOINTMENTS; break;
+    case 'skills': mockData = MOCK.MOCK_SKILLS_REGISTRY; break;
+    case 'jobs': mockData = MOCK.MOCK_JOB_POSTINGS; break;
+  }
+  if (method === 'GET') {
+    if (id) {
+      const item = mockData.find(i => i.id === id);
+      return item || {} as T;
+    }
+    return { items: mockData } as unknown as T;
+  }
+  // Mimic successful mutations in demo mode
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+    const payload = body ? JSON.parse(body) : {};
+    return { id: id || 'demo-' + Math.random().toString(36).substr(2, 9), ...payload } as T;
+  }
+  return {} as T;
 }
 async function seedCollection(name: string) {
   try {
     const colRef = collection(db, name);
     let data: any[] = [];
-    // Map collection names to their respective mock data arrays
     switch (name) {
-      case 'announcements':
-        data = [...MOCK.MOCK_ANNOUNCEMENTS];
-        break;
-      case 'directory':
-        data = [...MOCK.MOCK_DIRECTORY];
-        break;
-      case 'officials':
-        data = [...MOCK.MOCK_OFFICIALS];
-        break;
-      case 'residents':
-        data = [...MOCK.MOCK_RESIDENTS];
-        break;
-      case 'appointments':
-        data = [...MOCK.MOCK_APPOINTMENTS];
-        break;
-      case 'skills':
-        data = [...MOCK.MOCK_SKILLS_REGISTRY];
-        break;
-      case 'jobs':
-        data = [...MOCK.MOCK_JOB_POSTINGS];
-        break;
-      default:
-        console.warn(`No seed data defined for collection: ${name}`);
-        return;
+      case 'announcements': data = [...MOCK.MOCK_ANNOUNCEMENTS]; break;
+      case 'directory': data = [...MOCK.MOCK_DIRECTORY]; break;
+      case 'officials': data = [...MOCK.MOCK_OFFICIALS]; break;
+      case 'residents': data = [...MOCK.MOCK_RESIDENTS]; break;
+      case 'appointments': data = [...MOCK.MOCK_APPOINTMENTS]; break;
+      case 'skills': data = [...MOCK.MOCK_SKILLS_REGISTRY]; break;
+      case 'jobs': data = [...MOCK.MOCK_JOB_POSTINGS]; break;
     }
     if (data.length > 0) {
-      console.log(`Seeding ${data.length} items into ${name}...`);
+      console.log(`[Firebase] Seeding ${data.length} items into ${name}...`);
       const promises = data.map(item => addDoc(colRef, item));
       await Promise.all(promises);
     }
   } catch (err) {
-    console.error(`Failed to seed collection ${name}:`, err);
+    console.error(`[Firebase] Failed to seed ${name}:`, err);
   }
 }

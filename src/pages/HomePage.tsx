@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { ArrowRight, Bell, ShieldAlert, Store, Users, MapPin, ExternalLink } from 'lucide-react';
+import { ArrowRight, Bell, ShieldAlert, Store, Users, MapPin, ExternalLink, Inbox } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
@@ -16,6 +16,7 @@ export function HomePage() {
     queryKey: ['announcements'],
     queryFn: () => api<{ items: Announcement[] }>('/api/announcements'),
   });
+  const announcementList = announcements?.items || [];
   return (
     <div className="flex flex-col w-full">
       {/* Hero Section */}
@@ -52,7 +53,7 @@ export function HomePage() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="relative hidden lg:block"
             >
-              <div className="aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border-8 border-white dark:border-slate-900">
+              <div className="aspect-[4/3] rounded-4xl overflow-hidden shadow-2xl border-8 border-white dark:border-slate-900">
                 <img
                   src="https://images.unsplash.com/photo-1542332213-9b5a5a3fad35?auto=format&fit=crop&q=80&w=1200"
                   alt="Barangay Landscape"
@@ -79,16 +80,18 @@ export function HomePage() {
               <p className="text-muted-foreground">Stay informed about what's happening in our barangay.</p>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {isLoading ? (
-              [1, 2].map((i) => (
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[1, 2].map((i) => (
                 <Card key={i} className="h-32 animate-pulse bg-slate-200 dark:bg-slate-800" />
-              ))
-            ) : (
-              announcements?.items.slice(0, 4).map((item) => (
+              ))}
+            </div>
+          ) : announcementList.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {announcementList.slice(0, 4).map((item) => (
                 <Card
                   key={item.id}
-                  className="overflow-hidden hover:shadow-md transition-all cursor-pointer group"
+                  className="overflow-hidden hover:shadow-md transition-all cursor-pointer group border-none shadow-soft"
                   onClick={() => setSelectedAnnouncement(item)}
                 >
                   <div className="flex h-full">
@@ -103,7 +106,9 @@ export function HomePage() {
                         </Badge>
                         <span className="text-xs text-muted-foreground">{item.date}</span>
                       </div>
-                      <CardTitle className="text-xl mb-2 group-hover:text-sky-600 transition-colors">{item.title}</CardTitle>
+                      <CardTitle className="text-xl mb-2 group-hover:text-sky-600 transition-colors">
+                        {item.title}
+                      </CardTitle>
                       <CardDescription className="line-clamp-2 leading-relaxed">
                         {item.content}
                       </CardDescription>
@@ -113,9 +118,16 @@ export function HomePage() {
                     </CardHeader>
                   </div>
                 </Card>
-              ))
-            )}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="bg-white dark:bg-slate-900 p-6 rounded-full shadow-soft mb-4">
+                <Inbox className="h-8 w-8 text-slate-300" />
+              </div>
+              <p className="text-slate-500 font-medium">No announcements at the moment.</p>
+            </div>
+          )}
         </div>
       </section>
       {/* Feature Grids */}
@@ -179,7 +191,7 @@ export function HomePage() {
                   </Badge>
                   <span className="text-sm text-muted-foreground">{selectedAnnouncement.date}</span>
                 </div>
-                <DialogTitle className="text-2xl font-bold">{selectedAnnouncement.title}</DialogTitle>
+                <CardTitle className="text-2xl font-bold">{selectedAnnouncement.title}</CardTitle>
               </DialogHeader>
               <div className="py-4 text-lg leading-relaxed text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
                 {selectedAnnouncement.content}

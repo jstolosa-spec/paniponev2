@@ -13,8 +13,9 @@ import { LogOut, Trash2, FileText, Plus, UserPlus, ShieldAlert } from 'lucide-re
 import { toast } from 'sonner';
 import { DocumentPreview } from '@/components/DocumentPreview';
 import { AnnouncementForm } from '@/components/admin/AdminDialogs';
-import type { Appointment, Resident, BlotterReport, LuponCase, Announcement, DirectoryItem, Official, JobPosting, UserRole } from '@shared/types';
+import type { Appointment, Resident, BlotterReport, LuponCase, Announcement, UserRole } from '@shared/types';
 export function AdminDashboard() {
+  // STRICT PRIMITIVE SELECTORS
   const isAuthenticated = useAuthStore(s => s.isAuthenticated);
   const userRole = useAuthStore(s => s.user?.role) as UserRole | undefined;
   const userName = useAuthStore(s => s.user?.name);
@@ -22,43 +23,43 @@ export function AdminDashboard() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('appointments');
   const [selectedDoc, setSelectedDoc] = useState<any>(null);
-  // Derived Permissions from stable primitives
+  // Stability: Derive permissions from stable primitives
   const isManagement = userRole ? ['superAdmin', 'secretary', 'staff'].includes(userRole) : false;
   const isSuperAdmin = userRole === 'superAdmin';
   const isHighLevel = userRole ? ['superAdmin', 'secretary'].includes(userRole) : false;
-  // Core Data Queries
-  const { data: apps } = useQuery({ queryKey: ['appointments'], queryFn: () => api<{ items: Appointment[] }>('/api/appointments') });
-  const { data: residents } = useQuery({ 
-    queryKey: ['residents'], 
-    queryFn: () => api<{ items: Resident[] }>('/api/residents'), 
-    enabled: isManagement 
+  const { data: apps } = useQuery({ 
+    queryKey: ['appointments'], 
+    queryFn: () => api<{ items: Appointment[] }>('/api/appointments') 
   });
-  const { data: blotters } = useQuery({ 
-    queryKey: ['blotter'], 
-    queryFn: () => api<{ items: BlotterReport[] }>('/api/blotter'), 
-    enabled: isHighLevel 
+  const { data: residents } = useQuery({
+    queryKey: ['residents'],
+    queryFn: () => api<{ items: Resident[] }>('/api/residents'),
+    enabled: isManagement
   });
-  const { data: lupon } = useQuery({ 
-    queryKey: ['lupon'], 
-    queryFn: () => api<{ items: LuponCase[] }>('/api/lupon'), 
-    enabled: isHighLevel 
+  const { data: blotters } = useQuery({
+    queryKey: ['blotter'],
+    queryFn: () => api<{ items: BlotterReport[] }>('/api/blotter'),
+    enabled: isHighLevel
   });
-  const { data: announcements } = useQuery({ 
-    queryKey: ['announcements'], 
-    queryFn: () => api<{ items: Announcement[] }>('/api/announcements'), 
-    enabled: isManagement 
+  const { data: lupon } = useQuery({
+    queryKey: ['lupon'],
+    queryFn: () => api<{ items: LuponCase[] }>('/api/lupon'),
+    enabled: isHighLevel
   });
-  // Mutations
+  const { data: announcements } = useQuery({
+    queryKey: ['announcements'],
+    queryFn: () => api<{ items: Announcement[] }>('/api/announcements'),
+    enabled: isManagement
+  });
   const deleteRecord = useMutation({
     mutationFn: ({ type, id }: { type: string, id: string }) => api(`/api/${type}/${id}`, {
       method: 'DELETE',
-      headers: { 'X-User-Role': userRole || '' }
     }),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: [variables.type] });
       toast.success('Record deleted successfully');
     },
-    onError: () => toast.error('Unauthorized: Action restricted to SuperAdmin')
+    onError: (err: any) => toast.error(err.message || 'Action failed')
   });
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   return (
@@ -91,11 +92,19 @@ export function AdminDashboard() {
         <TabsContent value="appointments">
           <Card className="border-none shadow-soft overflow-hidden">
             <Table>
-              <TableHeader className="bg-muted/50"><TableRow><TableHead>Q#</TableHead><TableHead>Resident</TableHead><TableHead>Doc Type</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+              <TableHeader className="bg-muted/50">
+                <TableRow>
+                  <TableHead>Q#</TableHead>
+                  <TableHead>Resident</TableHead>
+                  <TableHead>Doc Type</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
               <TableBody>
                 {apps?.items.map((item) => (
                   <TableRow key={item.id}>
-                    <TableCell className="font-bold">#{item.queueNumber}</TableCell>
+                    <TableCell className="font-bold">#{item.queueNumber || 'N/A'}</TableCell>
                     <TableCell>{item.residentName}</TableCell>
                     <TableCell>{item.documentType}</TableCell>
                     <TableCell><Badge variant="outline">{item.status}</Badge></TableCell>
@@ -114,16 +123,29 @@ export function AdminDashboard() {
           <TabsContent value="residents">
             <Card className="border-none shadow-soft overflow-hidden">
               <Table>
-                <TableHeader className="bg-muted/50"><TableRow><TableHead>Name</TableHead><TableHead>Address</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+                <TableHeader className="bg-muted/50">
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Address</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
                 <TableBody>
                   {residents?.items.map((res) => (
                     <TableRow key={res.id}>
                       <TableCell className="font-medium">{res.name}</TableCell>
                       <TableCell>{res.address}</TableCell>
-                      <TableCell><Badge variant={res.verificationStatus === 'verified' ? 'default' : 'secondary'}>{res.verificationStatus}</Badge></TableCell>
+                      <TableCell>
+                        <Badge variant={res.verificationStatus === 'verified' ? 'default' : 'secondary'}>
+                          {res.verificationStatus}
+                        </Badge>
+                      </TableCell>
                       <TableCell className="text-right space-x-2">
                         {isSuperAdmin && (
-                          <Button size="sm" variant="ghost" className="text-destructive" onClick={() => deleteRecord.mutate({ type: 'residents', id: res.id })}><Trash2 className="h-4 w-4" /></Button>
+                          <Button size="sm" variant="ghost" className="text-destructive" onClick={() => deleteRecord.mutate({ type: 'residents', id: res.id })}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         )}
                       </TableCell>
                     </TableRow>
@@ -138,11 +160,17 @@ export function AdminDashboard() {
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-xl font-bold">Announcements</h3>
-                <AnnouncementForm trigger={<Button size="sm" className="bg-primary text-primary-foreground"><Plus className="h-4 w-4 mr-1" /> Add New</Button>} />
+                <AnnouncementForm trigger={<Button size="sm"><Plus className="h-4 w-4 mr-1" /> Add New</Button>} />
               </div>
               <Card className="border-none shadow-soft overflow-hidden">
                 <Table>
-                  <TableHeader className="bg-muted/50"><TableRow><TableHead>Title</TableHead><TableHead>Category</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+                  <TableHeader className="bg-muted/50">
+                    <TableRow>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
                   <TableBody>
                     {announcements?.items.map(a => (
                       <TableRow key={a.id}>
@@ -150,7 +178,9 @@ export function AdminDashboard() {
                         <TableCell><Badge variant="outline">{a.category}</Badge></TableCell>
                         <TableCell className="text-right">
                            {isSuperAdmin && (
-                             <Button size="sm" variant="ghost" className="text-destructive" onClick={() => deleteRecord.mutate({ type: 'announcements', id: a.id })}><Trash2 className="h-4 w-4" /></Button>
+                             <Button size="sm" variant="ghost" className="text-destructive" onClick={() => deleteRecord.mutate({ type: 'announcements', id: a.id })}>
+                               <Trash2 className="h-4 w-4" />
+                             </Button>
                            )}
                         </TableCell>
                       </TableRow>
