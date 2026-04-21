@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PanipOne - Barangay Panipuan Portal</title>
+    <title>PanipOne - Official Barangay Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -27,6 +27,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 </head>
 <body class="bg-slate-50 text-slate-900 font-sans min-h-screen flex flex-col">
+    <!-- Navbar -->
     <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
         <div class="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
             <a href="#home" class="flex items-center gap-2 font-black text-xl tracking-tight">
@@ -44,13 +45,30 @@
             <div id="nav-auth"></div>
         </div>
     </nav>
+    <!-- Main Content Root -->
     <main id="app-root" class="flex-grow"></main>
+    <!-- Global Footer -->
     <footer class="bg-white border-t border-slate-200 py-12">
-        <div class="max-w-7xl mx-auto px-4 text-center">
-            <span class="font-black text-lg text-slate-400">PanipOne</span>
-            <p class="text-sm text-slate-400 mt-2">© <span id="year"></span> Barangay Panipuan. All rights reserved.</p>
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-8 mb-8">
+                <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 bg-slate-200 rounded flex items-center justify-center">
+                         <i data-lucide="landmark" class="w-3.5 h-3.5 text-slate-500"></i>
+                    </div>
+                    <span class="font-black text-lg text-slate-900">PanipOne</span>
+                </div>
+                <div class="flex gap-6 text-sm font-medium text-slate-400">
+                    <a href="#home" class="hover:text-sky-500">Home</a>
+                    <a href="#directory" class="hover:text-sky-500">Directory</a>
+                    <a href="#emergency" class="hover:text-sky-500">Emergency</a>
+                </div>
+            </div>
+            <div class="pt-8 border-t border-slate-100 text-center">
+                <p class="text-xs text-slate-400">© <span id="year"></span> Barangay Panipuan, San Fernando, Pampanga. All rights reserved.</p>
+            </div>
         </div>
     </footer>
+    <!-- App Engine -->
     <script src="app.js"></script>
 </body>
 </html>
