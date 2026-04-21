@@ -80,7 +80,7 @@ function runSetupCommands() {
     const commands = [
     "bun add firebase@latest",
     "bun install firebase lucide-react framer-motion @tanstack/react-query date-fns clsx tailwind-merge",
-    "bun add lucide-react firebase@latest",
+    "bun add lucide-react",
     "bun add lucide"
 ];
     
