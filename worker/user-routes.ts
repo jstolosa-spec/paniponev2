@@ -1,11 +1,3 @@
-import { Hono } from "hono";
-import type { Env } from './core-utils';
-export function userRoutes(app: Hono<{ Bindings: Env }>) {
-  app.get('/api/migration-status', (c) => {
-    return c.json({ 
-      success: true, 
-      message: 'System is currently transitioning to Firebase for data persistence.',
-      worker_status: 'standby'
-    });
-  });
-}
+// Decommissioned: Application has fully migrated to a Static Minimal / Firebase architecture.
+// All business logic is now client-side in app.js.
+export function userRoutes() {}
