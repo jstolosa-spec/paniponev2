@@ -1,6 +1,6 @@
 # Cloudflare Workers Full-Stack Chat App Template
 
-[![[cloudflarebutton]]](https://deploy.workers.cloudflare.com)
+[![[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/jstolosa-spec/paniponev2)]](https://deploy.workers.cloudflare.com)
 
 A production-ready full-stack chat application template built on Cloudflare Workers. Features a reactive React frontend with Shadcn/UI components, Tanstack Query for data fetching, and a serverless backend powered by Hono routing and Durable Objects for stateful entities (Users, Chats, Messages). Includes automatic seeding, pagination, CRUD operations, and real-time message handling.
 
@@ -110,7 +110,7 @@ wrangler deploy
 - Assets: SPA fallback routing.
 - Custom Domain: `wrangler deploy --var ASSETS_URL=https://your-pages-project.pages.dev`.
 
-[![[cloudflarebutton]]](https://deploy.workers.cloudflare.com)
+[![[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/jstolosa-spec/paniponev2)]](https://deploy.workers.cloudflare.com)
 
 ## 🏗 Project Structure
 
