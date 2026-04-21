@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Wrench, CheckCircle2, Cloud, ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -35,7 +36,6 @@ export default function RegisterPage() {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       const uid = userCredential.user.uid;
-      // Create primary user document
       await setDoc(doc(db, 'users', uid), {
         id: uid,
         name: formData.name,
@@ -188,13 +188,14 @@ export default function RegisterPage() {
                 <CheckCircle2 className="h-20 w-20 text-emerald-600" />
               </div>
               <div className="space-y-2">
-                <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Welcome, {formData.name}!</h2>
+                <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Welcome to PanipOne!</h2>
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                  Your PanipOne account is now active. Some features may require manual verification by the Barangay Secretary.
+                  Account created for <span className="font-bold text-foreground">{formData.name}</span>. 
+                  Our team will verify your details within 24 hours. You can now explore the community directory.
                 </p>
               </div>
               <Button size="lg" className="w-full bg-slate-900 hover:bg-slate-800" asChild>
-                <a href="/">Go to Homepage</a>
+                <Link to="/">Back to Homepage</Link>
               </Button>
             </motion.div>
           )}

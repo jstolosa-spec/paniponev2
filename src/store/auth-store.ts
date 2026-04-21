@@ -24,7 +24,6 @@ interface AuthState {
   logout: () => Promise<void>;
   setAuth: (user: User | null) => void;
   setInitializing: (val: boolean) => void;
-  // Role Helpers (Internal usage)
   hasRole: (roles: UserRole[]) => boolean;
   canManageContent: () => boolean;
 }
@@ -42,28 +41,36 @@ export const useAuthStore = create<AuthState>()(
       setInitializing: (val) => set({ isInitializing: val }),
       login: async (email, pass) => {
         try {
+          // Firebase auth attempt
           await signInWithEmailAndPassword(auth, email, pass);
         } catch (e: any) {
-          // If Firebase is in placeholder mode, simulate a successful login for demo accounts
-          if (email.includes('admin@panipuan.gov.ph') && pass === 'admin123') {
-             set({ 
-               isAuthenticated: true, 
-               user: { id: 'demo-admin', name: 'Demo Administrator', role: 'superAdmin', email } 
+          // Hardened demo login path
+          if (email === 'admin@panipuan.gov.ph' && pass === 'admin123') {
+             set({
+               isAuthenticated: true,
+               user: { id: 'demo-admin', name: 'Demo Administrator', role: 'superAdmin', email }
              });
              return;
           }
-          throw e;
+          if (email === 'resident@panipuan.gov.ph' && pass === 'res123') {
+            set({
+              isAuthenticated: true,
+              user: { id: 'demo-resident', name: 'Demo Resident', role: 'resident', email }
+            });
+            return;
+          }
+          throw new Error(e.message || "Invalid credentials provided.");
         }
       },
       logout: async () => {
         try {
           await signOut(auth);
         } catch (e) {
-          console.warn("Logout error:", e);
+          console.warn("Firebase signout warning:", e);
         }
         set({ isAuthenticated: false, user: null });
       },
-      hasRole: (roles: UserRole[]) => {
+      hasRole: (roles) => {
         const user = get().user;
         return user ? roles.includes(user.role) : false;
       },
@@ -74,14 +81,14 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'panipone-auth-storage',
-      partialize: (state) => ({ 
-        user: state.user, 
-        isAuthenticated: state.isAuthenticated 
+      partialize: (state) => ({
+        user: state.user,
+        isAuthenticated: state.isAuthenticated
       }),
     }
   )
 );
-// Initialization listener to keep Firebase and Zustand in sync
+// Sync Firebase Auth State with Zustand State
 onAuthStateChanged(auth, async (fbUser: FirebaseUser | null) => {
   const store = useAuthStore.getState();
   if (fbUser) {
@@ -91,13 +98,13 @@ onAuthStateChanged(auth, async (fbUser: FirebaseUser | null) => {
         const data = userDoc.data();
         store.setAuth({
           id: fbUser.uid,
-          name: data?.name || fbUser.displayName || 'User',
+          name: data?.name || fbUser.displayName || 'PanipOne User',
           role: data?.role || 'resident',
           residentId: data?.residentId,
           email: fbUser.email || ''
         });
       } else {
-        // Handle cases where auth exists but firestore doc is missing (e.g. registration interrupted)
+        // Fallback if document missing
         store.setAuth({
           id: fbUser.uid,
           name: fbUser.displayName || 'New Resident',
@@ -106,12 +113,16 @@ onAuthStateChanged(auth, async (fbUser: FirebaseUser | null) => {
         });
       }
     } catch (e) {
-      console.warn("Auth sync failed, checking demo mode:", e);
-      store.setInitializing(false);
+      console.error("Auth Document Sync Failed:", e);
+      // Don't log out if we are in demo mode
+      if (!store.user?.id?.startsWith('demo-')) {
+        store.setInitializing(false);
+      }
     }
   } else {
     // Only clear if not in a persistent demo state
-    if (!store.user?.id?.startsWith('demo-')) {
+    const currentId = store.user?.id;
+    if (!currentId || !currentId.startsWith('demo-')) {
        store.setAuth(null);
     }
   }

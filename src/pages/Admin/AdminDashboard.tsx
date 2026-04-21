@@ -9,13 +9,22 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { LogOut, Trash2, FileText, Plus, UserPlus, ShieldAlert } from 'lucide-react';
+import { LogOut, Trash2, FileText, Plus, UserPlus, ShieldAlert, Inbox, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { DocumentPreview } from '@/components/DocumentPreview';
 import { AnnouncementForm } from '@/components/admin/AdminDialogs';
 import type { Appointment, Resident, BlotterReport, LuponCase, Announcement, UserRole } from '@shared/types';
+const EmptyState = ({ message = "No records found" }) => (
+  <TableRow>
+    <TableCell colSpan={100} className="h-32 text-center">
+      <div className="flex flex-col items-center justify-center text-muted-foreground gap-2">
+        <Inbox className="h-8 w-8 opacity-20" />
+        <span className="text-sm font-medium">{message}</span>
+      </div>
+    </TableCell>
+  </TableRow>
+);
 export function AdminDashboard() {
-  // STRICT PRIMITIVE SELECTORS
   const isAuthenticated = useAuthStore(s => s.isAuthenticated);
   const userRole = useAuthStore(s => s.user?.role) as UserRole | undefined;
   const userName = useAuthStore(s => s.user?.name);
@@ -23,30 +32,29 @@ export function AdminDashboard() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('appointments');
   const [selectedDoc, setSelectedDoc] = useState<any>(null);
-  // Stability: Derive permissions from stable primitives
   const isManagement = userRole ? ['superAdmin', 'secretary', 'staff'].includes(userRole) : false;
   const isSuperAdmin = userRole === 'superAdmin';
   const isHighLevel = userRole ? ['superAdmin', 'secretary'].includes(userRole) : false;
-  const { data: apps } = useQuery({ 
-    queryKey: ['appointments'], 
-    queryFn: () => api<{ items: Appointment[] }>('/api/appointments') 
+  const { data: apps, isLoading: isLoadingApps } = useQuery({
+    queryKey: ['appointments'],
+    queryFn: () => api<{ items: Appointment[] }>('/api/appointments')
   });
-  const { data: residents } = useQuery({
+  const { data: residents, isLoading: isLoadingResidents } = useQuery({
     queryKey: ['residents'],
     queryFn: () => api<{ items: Resident[] }>('/api/residents'),
     enabled: isManagement
   });
-  const { data: blotters } = useQuery({
+  const { data: blotters, isLoading: isLoadingBlotters } = useQuery({
     queryKey: ['blotter'],
     queryFn: () => api<{ items: BlotterReport[] }>('/api/blotter'),
     enabled: isHighLevel
   });
-  const { data: lupon } = useQuery({
+  const { data: lupon, isLoading: isLoadingLupon } = useQuery({
     queryKey: ['lupon'],
     queryFn: () => api<{ items: LuponCase[] }>('/api/lupon'),
     enabled: isHighLevel
   });
-  const { data: announcements } = useQuery({
+  const { data: announcements, isLoading: isLoadingAnnouncements } = useQuery({
     queryKey: ['announcements'],
     queryFn: () => api<{ items: Announcement[] }>('/api/announcements'),
     enabled: isManagement
@@ -62,6 +70,11 @@ export function AdminDashboard() {
     onError: (err: any) => toast.error(err.message || 'Action failed')
   });
   if (!isAuthenticated) return <Navigate to="/login" replace />;
+  const appItems = apps?.items || [];
+  const resItems = residents?.items || [];
+  const blotterItems = blotters?.items || [];
+  const luponItems = lupon?.items || [];
+  const announcementItems = announcements?.items || [];
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 lg:py-12">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-12">
@@ -102,19 +115,25 @@ export function AdminDashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {apps?.items.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell className="font-bold">#{item.queueNumber || 'N/A'}</TableCell>
-                    <TableCell>{item.residentName}</TableCell>
-                    <TableCell>{item.documentType}</TableCell>
-                    <TableCell><Badge variant="outline">{item.status}</Badge></TableCell>
-                    <TableCell className="text-right">
-                      <Button size="sm" variant="outline" className="gap-1" onClick={() => setSelectedDoc(item)}>
-                        <FileText className="h-3 w-3" /> Preview
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {isLoadingApps ? (
+                  <TableRow><TableCell colSpan={5} className="h-32 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" /></TableCell></TableRow>
+                ) : appItems.length > 0 ? (
+                  appItems.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell className="font-bold">#{item.queueNumber || 'N/A'}</TableCell>
+                      <TableCell>{item.residentName}</TableCell>
+                      <TableCell>{item.documentType}</TableCell>
+                      <TableCell><Badge variant="outline">{item.status}</Badge></TableCell>
+                      <TableCell className="text-right">
+                        <Button size="sm" variant="outline" className="gap-1" onClick={() => setSelectedDoc(item)}>
+                          <FileText className="h-3 w-3" /> Preview
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <EmptyState message="No appointments scheduled" />
+                )}
               </TableBody>
             </Table>
           </Card>
@@ -132,24 +151,30 @@ export function AdminDashboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {residents?.items.map((res) => (
-                    <TableRow key={res.id}>
-                      <TableCell className="font-medium">{res.name}</TableCell>
-                      <TableCell>{res.address}</TableCell>
-                      <TableCell>
-                        <Badge variant={res.verificationStatus === 'verified' ? 'default' : 'secondary'}>
-                          {res.verificationStatus}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right space-x-2">
-                        {isSuperAdmin && (
-                          <Button size="sm" variant="ghost" className="text-destructive" onClick={() => deleteRecord.mutate({ type: 'residents', id: res.id })}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {isLoadingResidents ? (
+                    <TableRow><TableCell colSpan={4} className="h-32 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" /></TableCell></TableRow>
+                  ) : resItems.length > 0 ? (
+                    resItems.map((res) => (
+                      <TableRow key={res.id}>
+                        <TableCell className="font-medium">{res.name}</TableCell>
+                        <TableCell>{res.address}</TableCell>
+                        <TableCell>
+                          <Badge variant={res.verificationStatus === 'verified' ? 'default' : 'secondary'}>
+                            {res.verificationStatus}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right space-x-2">
+                          {isSuperAdmin && (
+                            <Button size="sm" variant="ghost" className="text-destructive" onClick={() => deleteRecord.mutate({ type: 'residents', id: res.id })}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <EmptyState message="No residents found in database" />
+                  )}
                 </TableBody>
               </Table>
             </Card>
@@ -172,19 +197,25 @@ export function AdminDashboard() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {announcements?.items.map(a => (
-                      <TableRow key={a.id}>
-                        <TableCell className="font-medium">{a.title}</TableCell>
-                        <TableCell><Badge variant="outline">{a.category}</Badge></TableCell>
-                        <TableCell className="text-right">
-                           {isSuperAdmin && (
-                             <Button size="sm" variant="ghost" className="text-destructive" onClick={() => deleteRecord.mutate({ type: 'announcements', id: a.id })}>
-                               <Trash2 className="h-4 w-4" />
-                             </Button>
-                           )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {isLoadingAnnouncements ? (
+                      <TableRow><TableCell colSpan={3} className="h-32 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" /></TableCell></TableRow>
+                    ) : announcementItems.length > 0 ? (
+                      announcementItems.map(a => (
+                        <TableRow key={a.id}>
+                          <TableCell className="font-medium">{a.title}</TableCell>
+                          <TableCell><Badge variant="outline">{a.category}</Badge></TableCell>
+                          <TableCell className="text-right">
+                             {isSuperAdmin && (
+                               <Button size="sm" variant="ghost" className="text-destructive" onClick={() => deleteRecord.mutate({ type: 'announcements', id: a.id })}>
+                                 <Trash2 className="h-4 w-4" />
+                               </Button>
+                             )}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <EmptyState message="No announcements published" />
+                    )}
                   </TableBody>
                 </Table>
               </Card>
@@ -196,17 +227,25 @@ export function AdminDashboard() {
             <TabsContent value="blotter">
                <Card className="border-none shadow-soft overflow-hidden">
                 <Table>
-                  <TableHeader className="bg-muted/50"><TableRow><TableHead>Date</TableHead><TableHead>Parties</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+                  <TableHeader className="bg-muted/50">
+                    <TableRow><TableHead>Date</TableHead><TableHead>Parties</TableHead><TableHead className="text-right">Actions</TableHead></TableRow>
+                  </TableHeader>
                   <TableBody>
-                    {blotters?.items.map(b => (
-                      <TableRow key={b.id}>
-                        <TableCell>{b.date}</TableCell>
-                        <TableCell>{b.parties.join(' vs ')}</TableCell>
-                        <TableCell className="text-right">
-                          {isSuperAdmin && <Button size="sm" variant="ghost" className="text-destructive" onClick={() => deleteRecord.mutate({ type: 'blotter', id: b.id })}><Trash2 className="h-4 w-4" /></Button>}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {isLoadingBlotters ? (
+                      <TableRow><TableCell colSpan={3} className="h-32 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" /></TableCell></TableRow>
+                    ) : blotterItems.length > 0 ? (
+                      blotterItems.map(b => (
+                        <TableRow key={b.id}>
+                          <TableCell>{b.date}</TableCell>
+                          <TableCell>{b.parties.join(' vs ')}</TableCell>
+                          <TableCell className="text-right">
+                            {isSuperAdmin && <Button size="sm" variant="ghost" className="text-destructive" onClick={() => deleteRecord.mutate({ type: 'blotter', id: b.id })}><Trash2 className="h-4 w-4" /></Button>}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <EmptyState message="No blotter reports filed" />
+                    )}
                   </TableBody>
                 </Table>
               </Card>
@@ -214,17 +253,25 @@ export function AdminDashboard() {
             <TabsContent value="lupon">
               <Card className="border-none shadow-soft overflow-hidden">
                 <Table>
-                  <TableHeader className="bg-muted/50"><TableRow><TableHead>Case#</TableHead><TableHead>Type</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+                  <TableHeader className="bg-muted/50">
+                    <TableRow><TableHead>Case#</TableHead><TableHead>Type</TableHead><TableHead className="text-right">Actions</TableHead></TableRow>
+                  </TableHeader>
                   <TableBody>
-                    {lupon?.items.map(l => (
-                      <TableRow key={l.id}>
-                        <TableCell>{l.id.slice(0,8)}</TableCell>
-                        <TableCell>{l.caseType}</TableCell>
-                        <TableCell className="text-right">
-                          {isSuperAdmin && <Button size="sm" variant="ghost" className="text-destructive" onClick={() => deleteRecord.mutate({ type: 'lupon', id: l.id })}><Trash2 className="h-4 w-4" /></Button>}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {isLoadingLupon ? (
+                      <TableRow><TableCell colSpan={3} className="h-32 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" /></TableCell></TableRow>
+                    ) : luponItems.length > 0 ? (
+                      luponItems.map(l => (
+                        <TableRow key={l.id}>
+                          <TableCell>{l.id.slice(0,8)}</TableCell>
+                          <TableCell>{l.caseType}</TableCell>
+                          <TableCell className="text-right">
+                            {isSuperAdmin && <Button size="sm" variant="ghost" className="text-destructive" onClick={() => deleteRecord.mutate({ type: 'lupon', id: l.id })}><Trash2 className="h-4 w-4" /></Button>}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <EmptyState message="No mediated cases recorded" />
+                    )}
                   </TableBody>
                 </Table>
               </Card>
@@ -259,7 +306,7 @@ export function AdminDashboard() {
                   <CardDescription>Critical system events and audit trail.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground italic">System integrity logs are being recorded.</p>
+                  <p className="text-sm text-muted-foreground italic">System integrity logs are being recorded for PanipOne.</p>
                 </CardContent>
               </Card>
             </div>
