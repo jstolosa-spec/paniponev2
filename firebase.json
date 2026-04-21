@@ -1,16 +1,10 @@
 {
   "hosting": {
-    "public": ".",
+    "public": "dist",
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**",
-      "src/**",
-      "worker/**",
-      "shared/**",
-      "tsconfig.json",
-      "package.json",
-      "wrangler.jsonc"
+      "**/node_modules/**"
     ],
     "rewrites": [
       {

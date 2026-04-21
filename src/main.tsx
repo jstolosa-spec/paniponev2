@@ -1,8 +1,8 @@
 import '@/lib/errorReporter';
 import { enableMapSet } from "immer";
 enableMapSet();
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
 import {
   createBrowserRouter,
   RouterProvider,
@@ -10,7 +10,7 @@ import {
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { RouteErrorBoundary } from '@/components/RouteErrorBoundary';
-import '@/index.css'
+import '@/index.css';
 import { RootLayout } from '@/components/layout/RootLayout';
 import { HomePage } from '@/pages/HomePage';
 import { DirectoryPage } from '@/pages/DirectoryPage';
@@ -22,14 +22,17 @@ import { AppointmentsPage } from '@/pages/AppointmentsPage';
 import ContactPage from '@/pages/ContactPage';
 import RegisterPage from '@/pages/RegisterPage';
 import ArchivesPage from '@/pages/ArchivesPage';
+// Optimized QueryClient for Static Hosting
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
+      staleTime: 1000 * 60 * 5, // 5 minutes cache for static-ish data
     },
   },
 });
+// Production-ready Router
 const router = createBrowserRouter([
   {
     path: "/",
@@ -57,4 +60,4 @@ createRoot(document.getElementById('root')!).render(
       </ErrorBoundary>
     </QueryClientProvider>
   </StrictMode>,
-)
+);
